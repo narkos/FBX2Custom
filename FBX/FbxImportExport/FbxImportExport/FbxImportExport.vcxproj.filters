@@ -1,3 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="OurFiles">
+      <UniqueIdentifier>{4376b2a8-fcc3-4c98-be3d-ad7f8e69ffa6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OurFiles\HFiles">
+      <UniqueIdentifier>{6e9cfea3-c0dc-445d-8d53-ad02d5ad9469}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OurFiles\CPPFiles">
+      <UniqueIdentifier>{d16f8808-d997-41ec-939d-97a8e947076b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Utility.h">
+      <Filter>OurFiles\HFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomFormat.h">
+      <Filter>OurFiles\HFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomExporter.h">
+      <Filter>OurFiles\HFiles</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>

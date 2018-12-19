@@ -7,24 +7,34 @@ using namespace std;
 
 namespace CustomFormat 
 {
-	class BaseObject 
+	class File
 	{
 	public:
-		Header *header;
-		Body *body;
+		Header::Base *header;
+		Body::Base *body;
 	};
 
 	// Headers.
 #pragma region ---HEADERS---
 	namespace Header
 	{
-		class Header
+		class Base
 		{
 
 		};
 
+		// File
+		class File : public Base
+		{
+		public:
+			int nrMeshes;
+			int nrMaterials;
+			int nrLights;
+			int nrMorphs;
+		};
+
 		// Mesh
-		class MeshHeader : Header
+		class Mesh : public Base
 		{
 		public:
 			int nrVertices;
@@ -34,7 +44,7 @@ namespace CustomFormat
 		};
 
 		// Material
-		class MaterialHeader : Header
+		class Material : public Base
 		{
 		public:
 			int materialIndex;
@@ -42,20 +52,54 @@ namespace CustomFormat
 			string textureName;
 		};
 
-		class LightHeader
+		// Light
+		class Light : public Base
 		{
+		public:
+			Vector3 position;
+			float range;
+		};
 
+		// Camera
+		class Camera : public Base
+		{
+		public:
+			Vector3 position;
+			Vector3 rotation;
 		};
 	}
-
-
 #pragma endregion ---HEADERS---
 
 	// Bodies.
 #pragma region ---BODY---
-	class Body
+	namespace Body
 	{
+		class Base
+		{
 
-	};
+		};
+
+		class File : public Base
+		{
+			Mesh *meshes;
+			Header::Material *materials;
+			Header::Light *lights;
+			Header::Camera camera;
+		};
+
+		class Mesh : public Base
+		{
+			Vertex *vertices;
+			int *indices;
+		};
+
+		class Vertex : public Base
+		{
+			Vector3 position;
+			Vector3 normal;
+			Vector2 uv;
+			Vector3 tangent;
+		};
+	}
 #pragma endregion ---BODY---
 }
