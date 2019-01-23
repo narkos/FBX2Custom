@@ -1,10 +1,11 @@
 #include <fbxsdk.h>
 #include <iostream>
-#include "CustomFormat.h"
+
 #pragma comment(lib, "libfbxsdk-md.lib")
 using namespace std;
 
 int main() {
+	FbxManager* lSdkManager = FbxManager::Create();
 	int i;
 	cout << "hej";
 	cin >> i;
