@@ -5,6 +5,7 @@
     <ClCompile Include="CustomExporter.cpp">
       <Filter>OurFiles\CPPFiles</Filter>
     </ClCompile>
+    <ClCompile Include="FBXImport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="OurFiles">
@@ -27,5 +28,6 @@
     <ClInclude Include="CustomExporter.h">
       <Filter>OurFiles\HFiles</Filter>
     </ClInclude>
+    <ClInclude Include="FBXImport.h" />
   </ItemGroup>
 </Project>
