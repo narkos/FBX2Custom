@@ -14,8 +14,6 @@ int main() {
 
 	int i;
 
-	cout << "hej";
-
 	Importer* importer = new Importer();
 
 	//importer->PrintStuffs(); //TEST
