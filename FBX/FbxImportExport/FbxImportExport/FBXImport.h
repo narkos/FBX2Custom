@@ -12,7 +12,7 @@ using namespace std;
 
 struct FbxFileHeader
 {
-	int meshCount = 0;
+	int meshCount = 0;	//Not rly needed just check vector.size
 	int materialCount = 0;
 	int lightCount = 0;
 	int cameraCount = 0;
@@ -30,13 +30,15 @@ struct Vertex
 struct MeshHeader
 {
 	int vertexCount;
-	int normalCount;
+	//int normalCount; ??
 	int uvCount;
 	int faceIndexCount; //Vertex count * 3
+	vector<int> meshIndices; //Prolly move
 };
 
 struct Transform
 {
+	const char* name;
 	FbxDouble3 position;
 	FbxDouble3 scale;
 	FbxDouble3 rotation;
@@ -44,35 +46,57 @@ struct Transform
 
 struct Mesh
 {
+	Transform meshTransform; //Be here or in the mesh header?
 	MeshHeader meshHeader;
-	Vertex* meshVertexList;
-	Transform meshTransform; 
+	//Vertex* meshVertexList;
+	vector<Vertex> meshVertices; //Original
+	vector<Vertex> meshVertexListNoIndex; //New Because of Simon - ACTUALLY HAS INDICES OMEGALUL
 };
 
-class Importer
+struct Camera
+{
+public:
+	Transform cameraTransform;
+	FbxDouble3 viewDirection;	//AKA LookAt
+	FbxDouble3 upVector;
+	//FbxDouble3 right;	//Can't find property in FBX
+	bool isOrtho;
+	FbxMatrix projectionMatrix;
+	//double rot[4]; //Quaternion rotation of the camera (x, y, z, w)
+};
+
+struct Light
+{
+	Transform lightTransform;
+	FbxDouble3 color;
+	FbxDouble intensity;
+};
+
+class Reader
 {
 private:
 	//Data to store for production of custom file:
-
 	FbxFileHeader globalHeader;	//Global File Header
 
-	const char* nodeName;
-	int nodeType; //1.Mesh - 2:Camera - 3:Light (For example)
-
-	Transform nodeTransformData;
-	Mesh meshData; //Fill this with the dada
-
+	vector<Mesh> meshes; //Fill this with the dada
+	vector<Camera> cameras;
+	vector<Light> lights;
 
 public:
-	Importer();
-	~Importer();
+	Reader();
+	~Reader();
 
 	bool ImportFBX();
 	bool ReadSceneData(FbxScene* scene);
-	void ProcessMesh(FbxNode* currentNode);
-	void ProcessNormals(FbxMesh* mesh, int index, int vertexNr);
+	Mesh ProcessMesh(FbxNode* currentNode, FbxScene* scene);
+	FbxDouble3 ProcessNormals(FbxMesh* mesh, int index, int vertexNr);
+	FbxDouble3 ProcessTangents(FbxMesh* mesh, int index, int vertexNr);
+	Camera ProcessCamera(FbxNode* currentNode);
+	Light ProcessLight(FbxNode* currentNode);
+	Transform GetNodeTransform(FbxNode* currentNode);
 	void PrintNodeGeneralData(FbxNode* pNode);
 	void PrintAttribute(FbxNodeAttribute* pAttribute);
-	FbxString Importer::GetAttributeTypeName(FbxNodeAttribute::EType type);
-
+	void PrintTestData();
+	void PrintFbxMatrix(FbxMatrix inMatrix);
+	FbxString GetAttributeTypeName(FbxNodeAttribute::EType type);
 };

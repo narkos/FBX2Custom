@@ -14,12 +14,13 @@ int main() {
 
 	int i;
 
-	Importer* importer = new Importer();
+	Reader* importer = new Reader();
 
 	//importer->PrintStuffs(); //TEST
 	
 	importer->ImportFBX(); //Now comes with self destruct b*tches
 
+	importer->PrintTestData();
 
 
 	//FBXSDK_printf("\nTest Where does this go?\n"); //Also TEST

@@ -2,18 +2,18 @@
 
 using namespace std;
 
-Importer::Importer()
+Reader::Reader()
 {
 	//Initialize Here
 }
 
-Importer::~Importer()
+Reader::~Reader()
 {
 	//Destroy Here
 
 }
 
-bool Importer::ImportFBX()
+bool Reader::ImportFBX()
 {
 	//Create the FBX SDK Manager
 	FbxManager* lSdkManager = FbxManager::Create();
@@ -32,13 +32,19 @@ bool Importer::ImportFBX()
 	(*(lSdkManager->GetIOSettings())).SetBoolProp(IMP_FBX_ANIMATION, true);
 	(*(lSdkManager->GetIOSettings())).SetBoolProp(IMP_FBX_GLOBAL_SETTINGS, true);
 
-
 	//Create the importer
 	FbxImporter* fbxImporter = FbxImporter::Create(lSdkManager, "");
 
 	//Define file name. Who needs to be dynamic yo
 	//const char* fbxFilename = "testFileFBX.fbx";
 	const char* fbxFilename = "testFileFBX_triangulated.fbx";
+	//const char* fbxFilename = "testFileFBX_triangulated_Lights.fbx";
+	//const char* fbxFilename = "testFileFBX_blend_shapes.fbx";
+	//const char* fbxFilename = "Animation_Only.fbx";
+	//const char* fbxFilename = "Animation_Only_Baked.fbx";
+	//const char* fbxFilename = "testFileFBX_Animation_Layer_bake.fbx";
+	//const char* fbxFilename = "BlendshapeTest.fbx";
+	//const char* fbxFilename = "Animation_Only_Preserve_bake.fbx";
 
 	//Initialize the damn importher. 
 	bool lImportStatus = fbxImporter->Initialize(fbxFilename, -1, lSdkManager->GetIOSettings());
@@ -49,8 +55,7 @@ bool Importer::ImportFBX()
 		cout << fbxImporter->GetStatus().GetErrorString();
 	}
 	else
-		FBXSDK_printf("\n\nSuccess reading FBX file!\n");
-
+		FBXSDK_printf("Success reading FBX file!\n");
 
 	//Create Scene container. This object will hold the loaded scene data. Fuck yes. 
 	FbxScene* lScene = FbxScene::Create(lSdkManager, "tempScene");
@@ -67,7 +72,7 @@ bool Importer::ImportFBX()
 	return 0;
 }
 
-bool Importer::ReadSceneData(FbxScene* scene)
+bool Reader::ReadSceneData(FbxScene* scene)
 {
 	//Interpret all the data in the FBX Scene and fill our variables to prepare for export of custom file. 
 
@@ -76,133 +81,298 @@ bool Importer::ReadSceneData(FbxScene* scene)
 
 	FbxNode* currentNode; //Will get refilled for every object
 
-	//Create object array[no of nodes]
+	//ANIMATION TESTINGANINATION TESTINGANINATION TESTINGANINATION TESTINGANINATION TESTING
 
-	//WOW READ
+	//https://gamedev.stackexchange.com/questions/59419/how-can-i-import-fbx-animations-using-the-fbx-sdk
+	//https://forums.autodesk.com/t5/fbx-forum/how-do-i-get-animation-frames-and-keys-from-a-mesh/td-p/4189688
+	//http://help.autodesk.com/view/FBX/2019/ENU/?guid=FBX_Developer_Help_animation_html
+
+	FbxAnimStack* animStack = scene->GetCurrentAnimationStack();
+	int numStacks = scene->GetSrcObjectCount<FbxAnimStack>();
+	
+	cout << "NumStacks: " << numStacks << " NUMSTACKS\n";
+
+	for (int a = 0; a < numStacks; a++)
+	{
+		FbxAnimStack* animationStack = scene->GetSrcObject<FbxAnimStack>(a);
+		int numAnimLayers = animationStack->GetMemberCount<FbxAnimLayer>();
+		//cout << "NumStackSLAYERS: " << numAnimLayers << " NUMSTACKLAYERSZS\n";
+
+		for (int n = 0; n < numAnimLayers; n++)
+		{
+			FbxAnimLayer* animationLayer = animationStack->GetMember<FbxAnimLayer>(n);
+		}
+	}
+
+	//ANINATION TESTINGANINATION TESTINGANINATION TESTINGANINATION TESTINGANINATION TESTING
+
 	//https://forums.autodesk.com/t5/fbx-forum/useful-things-you-might-want-to-know-about-fbxsdk/td-p/4821177
 	if (lRootNode)
 		for (int i = 0; i < lRootNode->GetChildCount(); i++)	//Traverse through every node in the scene.
 		{
 			//Fill our objects with data beep bop.  
 			currentNode = lRootNode->GetChild(i);	//Get the node at hand
-			//objectArray[i].position = currentNode.pos typ
-
-			//Fill General Node Information, regardless of node type
-			nodeName = currentNode->GetName();
-			nodeTransformData.position = currentNode->LclTranslation.Get();
-			nodeTransformData.rotation = currentNode->LclRotation.Get();
-			nodeTransformData.scale = currentNode->LclScaling.Get();
-
-			PrintNodeGeneralData(currentNode);	//Print each nodes data and it's kids, if it ever had any...
+			
+			//PrintNodeGeneralData(currentNode);	//Print each nodes data and it's kids, if it ever had any...
 
 			if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eMesh)
 			{
 				globalHeader.meshCount += 1;	//Increment count
-				ProcessMesh(currentNode);
+				//meshes[i] = ProcessMesh(currentNode);
+				meshes.push_back(ProcessMesh(currentNode, scene));
 			}
-
-			if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eCamera)
+			else if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eCamera)
 			{
 				globalHeader.cameraCount += 1;	//Increment count
-
+				cameras.push_back(ProcessCamera(currentNode));
 			}
-
-			if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eLight)
+			else if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eLight)
 			{
 				globalHeader.lightCount += 1;	//Increment count
-
+				lights.push_back(ProcessLight(currentNode));
+			}
+			else if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eShape)
+			{
+				cout << "";
+			}
+			else if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eUnknown)
+			{
+				cout << "";
+			}
+			else
+			{
+				cout << "Theres something else!";
+				PrintAttribute(currentNode->GetNodeAttributeByIndex(0));
 			}
 			//How to get TEXTURES/MATERIALS?? It's no node
+
+			
 		}
 
 	return 0;
 }
 
-void Importer::ProcessMesh(FbxNode* currentNode)
+Mesh Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene)
 {
+	Mesh tempMesh;
+	Vertex tempVertex;
 	FbxMesh* mesh = currentNode->GetMesh();	//Used GetGeometry before. Difference?
 	int vertexCount = mesh->GetControlPointsCount();
 	int triangleCount = mesh->GetPolygonCount();
-	int normalCount = mesh->GetElementNormalCount();
-	int uvCount = mesh->GetElementUVCount();
-	int texUVCount = mesh->GetTextureUVCount();
+	int uvCount = mesh->GetTextureUVCount();
 	int faceIndexCount = mesh->GetPolygonVertexCount();	//Vertex count * 3
+	
+	int vertexNr = 0; //Keep track of the number of verts we fill our tempMesh with. 
 
 	FbxLayerElementUV* meshUV = mesh->GetElementUV(0);	//Enable us to get the UV's from the UV Layer of the Mesh
-	//FbxLayerElementTangent* meshTangent = mesh->GetElementTangent(0);
+
+	//Mesh tempMesh; //Fill this with the dada
+	tempMesh.meshHeader.vertexCount = vertexCount;	//Fill the Mesh's-Header
+	tempMesh.meshHeader.uvCount = uvCount;			//Fill the Mesh's-Header
+	tempMesh.meshHeader.faceIndexCount = faceIndexCount;	//Fill the Mesh's-Header
+
+	tempMesh.meshTransform = GetNodeTransform(currentNode);	//Get Mesh Transform
+
+	//tempMesh.meshVertexList = new Vertex[faceIndexCount];
+	
+	//cout << "Triangle Count: " << triangleCount << "\n";
+	//cout << "Vertex Count: " << vertexCount << "\n";
+	//cout << "polyVert Count: " << faceIndexCount << "\n";
+	//cout << "UV Count: " << uvCount << "\n\n";
+
+	//RESERVED FOR ANIMATION TESTING RESERVED FOR ANIMATION TESTINGRESERVED FOR ANIMATION TESTING RESERVED FOR ANIMATION TESTING
+	FbxAnimStack* animStack = scene->GetCurrentAnimationStack();
+	int numStacks = scene->GetSrcObjectCount<FbxAnimStack>();
+
+	cout << "NumStacks: " << numStacks << " NUMSTACKS\n";
+
+
+	for (int a = 0; a < numStacks; a++)
+	{
+		FbxAnimStack* animationStack = scene->GetSrcObject<FbxAnimStack>(a);
+		int numAnimLayers = animationStack->GetMemberCount<FbxAnimLayer>();
+		//cout << "NumStackSLAYERS: " << numAnimLayers << " NUMSTACKLAYERSZS\n";
+
+		for (int n = 0; n < numAnimLayers; n++)
+		{
+			FbxAnimLayer* animationLayer = animationStack->GetMember<FbxAnimLayer>(n);
+			
+			int animObjCount = animationLayer->GetDstObjectCount();
+
+			for (int suck = 0; suck < animObjCount; suck++)
+			{
+
+				FbxObject* animObjectHopefully = animationLayer->GetDstObject(suck);
+				cout << "AnimationLayer source object no: " << suck << "\n";
+				cout << "Type: " << animObjectHopefully->GetTypeName() << "\n";
+				cout << "Name: " << animObjectHopefully->GetName() << "\n";
+				cout << "DstPropertyCount: " << animObjectHopefully->GetDstObjectCount() << "\n\n";
+
+				for (int wah = 0; wah < animObjectHopefully->GetDstObjectCount(); wah++)
+				{
+					cout << "dstType: " << animObjectHopefully->GetDstObject(wah)->GetTypeName() << "\n";
+					cout << "dstName: " << animObjectHopefully->GetDstObject(wah)->GetName() << "\n";
+				}
+
+			}
+
+			cout << "ANIMOBJECTCOUNTPLEASE: " << animObjCount << " !\n";
+
+			//FbxAnimCurve* animationCurve = 
+		}
+
+	}
+
+	FbxGeometry* geometry = currentNode->GetGeometry();
+	
+	//FbxShape* shape = geometry->GetShapeCount
+	//TO DO: BlendShapeChannels
+
 	
 
-	//Mesh meshData; //Fill this with the dada
-	meshData.meshHeader.vertexCount = vertexCount;	//Fill the Mesh's-Header
-	meshData.meshHeader.normalCount = normalCount;	//Fill the Mesh's-Header
-	meshData.meshHeader.uvCount = uvCount;			//Fill the Mesh's-Header
-	meshData.meshHeader.faceIndexCount = faceIndexCount;	//Fill the Mesh's-Header
+	if (mesh->GetShapeCount() > 0)
+	{
+		int countt = geometry->GetShapeCount();
+	}
 
-	//meshData.meshVertexList = new Vertex[vertexCount];	//USE IF WE DONT GO THROUGH TRIANGLES
-	meshData.meshVertexList = new Vertex[faceIndexCount];
-	int vertexNr = 0; //Keep track of the number of verts we fill our MeshData with. 
+	if (geometry->GetDeformerCount() > 0)
+		cout << "\nWhaaaadup";
 
-	cout << "Triangle Count: " << triangleCount << "\n";
-	cout << "Vertex Count: " << vertexCount << "\n";
-	cout << "polyVert Count: " << faceIndexCount << "\n";
-	cout << "Normal Count: " << normalCount << "\n";
-	cout << "UV Count: " << uvCount << "\n";
-	cout << "Texture UV Count: " << texUVCount << "\n\n";
+	if (geometry->GetShapeCount() > 0)
+		cout << "\n HOOOL UP\n";
+
+	if (mesh->GetDeformerCount() > 0)
+	{
+		FbxDeformer* deformer = mesh->GetDeformer(0);
+		if (deformer->GetDeformerType() == FbxDeformer::eBlendShape)
+			cout << "\n\n\n\n\nHurray\n\n\n\n\n\n";
+	}
+	//RESERVED FOR ANIMATION TESTING RESERVED FOR ANIMATION TESTINGRESERVED FOR ANIMATION TESTING RESERVED FOR ANIMATION TESTING
+
+	//Alternative if we just do a short list of vertices:
+	//for (int j = 0; j < vertexCount; j++)
+	//{
+	//	tempVertex.vPos = mesh->GetControlPointAt(j);
+	//	tempVertex.vNormal = mesh->GetElementNormal(0)->GetDirectArray().GetAt(j);
+	//	tempVertex.vUV = meshUV->GetDirectArray().GetAt(j);
+	//	//tempVertex.vTangent = 
+	//}
 
 	for (int j = 0; j < triangleCount; j++)	//For every triangle of the mesh
 	{
 		//https://stackoverflow.com/questions/50926809/fetching-indices-with-fbx-sdk
+		//https://www.gamedev.net/articles/programming/graphics/how-to-work-with-fbx-sdk-r3582
 		for (int x = 0; x < 3; x++)	//Traverse through every vertex of every triangle 
 		{
 			int index = mesh->GetPolygonVertex(j, x);
-			//cout << index << " ";
+			int UVIndex = mesh->GetTextureUVIndex(j, x);
+			//cout << index << " ! " << UVIndex << "\n";
 			//cout << vertexNr << " ";
 
-			//GET VERTEX POS. MAYBE MAKE A FUNCTION LOL 
-			meshData.meshVertexList[vertexNr].vPos = mesh->GetControlPointAt(index); //USE IF WE DONT GO THROUGH TRIANGLES
-			//cout << "vPos: " << meshData.meshVertexList[vertexNr].vPos[0] << " " << meshData.meshVertexList[vertexNr].vPos[1] << " " << meshData.meshVertexList[vertexNr].vPos[2] << " \n";
+			tempMesh.meshHeader.meshIndices.push_back(index);	//Fill the mesh index list
 
-			//HEY LOOK I MADE A FUNCTION LOL
-			ProcessNormals(mesh, index, vertexNr);
-
-			int UVIndex = mesh->GetTextureUVIndex(j, x);
-
-			//meshData.meshVertexList[vertexNr].vTangent = meshTangent->GetDirectArray().GetAt(index);
-			//cout << "vTan: " << meshData.meshVertexList[vertexNr].vTangent[0] << " " << meshData.meshVertexList[vertexNr].vTangent[1] << " " << meshData.meshVertexList[vertexNr].vTangent[2] << " \n";
-
-
-			//GET VERTEX UV. MAYBE MAKE A FUNCTION LOL
-			//meshData.meshVertexList[vertexNr].vUV = meshUV->GetDirectArray().GetAt(index);
-			meshData.meshVertexList[vertexNr].vUV = meshUV->GetDirectArray().GetAt(UVIndex);
-			//cout << "vUV: " << meshData.meshVertexList[vertexNr].vUV[0] << " " << meshData.meshVertexList[vertexNr].vUV[1] << " \n";
-
+			tempVertex.vPos = mesh->GetControlPointAt(index); //Get Vertex Position
+			tempVertex.vNormal = ProcessNormals(mesh, index, vertexNr);	//Get vertex Normal
+			tempVertex.vUV = meshUV->GetDirectArray().GetAt(UVIndex);	//Get Vertex UV
+			tempVertex.vTangent = ProcessTangents(mesh, index, vertexNr);
+			//TO Do: Bi_Normals
+			//tempVertex.vTangent = meshTangent->GetDirectArray().GetAt(index);
 
 			vertexNr++;
+			tempMesh.meshVertices.push_back(tempVertex);
 		}
-		//cout << "\n";
 	}
-	cout << "Just looped trough -" << vertexNr << "- polygon vertices in mesh -" << nodeName << "-\n\n";
+	cout << "\nJust looped trough -" << vertexNr << "- polygon vertices in mesh -" << currentNode->GetName() << "-\n\n";
+	return tempMesh;
 }
 
-void Importer::ProcessNormals(FbxMesh* mesh, int index, int vertexNr)
+FbxDouble3 Reader::ProcessNormals(FbxMesh* mesh, int index, int vertexNr)
 {
-	FbxGeometryElementNormal* meshNormal = mesh->GetElementNormal(0);	//Enable us to get the Normals from the Normal Layer of the Mesh
+	if (mesh->GetElementNormalCount() < 1)	//Failsafe
+		return FbxDouble3(0, 0, 0);
 
+	//ELSE
+	FbxGeometryElementNormal* meshNormal = mesh->GetElementNormal(0);	//Enable us to get the Normals from the Normal Layer of the Mesh
+	FbxDouble3 tempNormal;
 
 	if (meshNormal->GetMappingMode() == FbxGeometryElement::eByControlPoint)
 	{
-		meshData.meshVertexList[vertexNr].vNormal = meshNormal->GetDirectArray().GetAt(index);
+		//tempMesh.meshVertexList[vertexNr].vNormal = meshNormal->GetDirectArray().GetAt(index);	//OLD
+		tempNormal = meshNormal->GetDirectArray().GetAt(index);
+		//cout << "ControlP ";
 		//cout << "Normal Mapping mode: ByControlPoint\n";
 	}
 	else if (meshNormal->GetMappingMode() == FbxGeometryElement::eByPolygonVertex)
 	{
-		meshData.meshVertexList[vertexNr].vNormal = meshNormal->GetDirectArray().GetAt(vertexNr);
+		tempNormal = meshNormal->GetDirectArray().GetAt(vertexNr);
+		//cout << "PolVert ";
 		//cout << "Normal Mapping mode: ByPolygonVertex\n";
 	}
-	//cout << "vNor: " << meshData.meshVertexList[vertexNr].vNormal[0] << " " << meshData.meshVertexList[vertexNr].vNormal[1] << " " << meshData.meshVertexList[vertexNr].vNormal[2] << " \n";
+	return tempNormal;
 }
 
-void Importer::PrintNodeGeneralData(FbxNode* pNode)
+FbxDouble3 Reader::ProcessTangents(FbxMesh* mesh, int index, int vertexNr)
+{
+	if (mesh->GetElementTangentCount() < 1)	//Failsafe
+		return FbxDouble3(0, 0, 0);
+
+	//ELSE:
+	FbxLayerElementTangent* meshTangent = mesh->GetElementTangent(0);	//Enable us to get the Tangents from the Tangents Layer of the Mesh
+	FbxDouble3 tempTangent;
+
+	if (meshTangent->GetMappingMode() == FbxGeometryElement::eByControlPoint)
+		tempTangent = meshTangent->GetDirectArray().GetAt(index);
+	else if (meshTangent->GetMappingMode() == FbxGeometryElement::eByPolygonVertex)
+		tempTangent = meshTangent->GetDirectArray().GetAt(vertexNr);
+
+	return tempTangent;
+}
+
+Camera Reader::ProcessCamera(FbxNode* currentNode)
+{
+	FbxCamera* fbxCamera = currentNode->GetCamera();
+	Camera tempCamera;
+
+	tempCamera.cameraTransform = GetNodeTransform(currentNode);		//Get Camera Transform
+
+	if (fbxCamera->ProjectionType.Get() == FbxCamera::EProjectionType::eOrthogonal)
+		tempCamera.isOrtho = true;
+	else
+		tempCamera.isOrtho = false;	//Perspective (ePerspective)
+
+	tempCamera.viewDirection = fbxCamera->EvaluateLookAtPosition();
+	tempCamera.upVector = fbxCamera->UpVector.Get();
+	tempCamera.projectionMatrix = fbxCamera->ComputeProjectionMatrix(1920, 1080);	//Ehhh, these numbers should be???
+	//PrintFbxMatrix(tempCamera.projectionMatrix);
+	//TO DO: FOV?
+	//fbxCamera->FieldOfViewX.Get()
+
+	return tempCamera;
+}
+
+Light Reader::ProcessLight(FbxNode* currentNode)
+{
+	Light tempLight;
+	FbxLight* fbxLight = currentNode->GetLight();
+
+	tempLight.lightTransform = GetNodeTransform(currentNode);
+	tempLight.color = fbxLight->Color.Get();
+	tempLight.intensity= fbxLight->Intensity.Get();
+
+	return tempLight;
+}
+
+Transform Reader::GetNodeTransform(FbxNode* currentNode)
+{
+	Transform tempTransform;
+	tempTransform.name = currentNode->GetName();
+	tempTransform.position = currentNode->LclTranslation.Get();
+	tempTransform.rotation = currentNode->LclRotation.Get();
+	tempTransform.scale = currentNode->LclScaling.Get();
+	return tempTransform;
+}
+
+void Reader::PrintNodeGeneralData(FbxNode* pNode)
 {
 	//PrintTabs(); //IF YOU BOTHER TO MAKE THIS 
 	const char* nodeName = pNode->GetName();
@@ -224,7 +394,7 @@ void Importer::PrintNodeGeneralData(FbxNode* pNode)
 		PrintNodeGeneralData(pNode->GetChild(j));
 }
 
-void Importer::PrintAttribute(FbxNodeAttribute* pAttribute)
+void Reader::PrintAttribute(FbxNodeAttribute* pAttribute)
 {
 	if (!pAttribute) return;
 
@@ -236,7 +406,105 @@ void Importer::PrintAttribute(FbxNodeAttribute* pAttribute)
 
 }
 
-FbxString Importer::GetAttributeTypeName(FbxNodeAttribute::EType type) 
+void Reader::PrintTestData()
+{
+	cout << "---->>>>>>>>>> TEST DATA BELOW <<<<<<<<<<----\n";
+	cout << ">>>>>>>>>>MESHES<<<<<<<<<<\n";
+	int nrMeshes = meshes.size();
+
+	//cout << "Lenght of Meshes Vector Array: " << nrMeshes << "\n";
+
+	for (int i = 0; i < nrMeshes; i++)
+	{
+		int nrVertices = meshes[i].meshVertices.size();
+		cout << "\nMesh no." << i << " got " << nrVertices << " vertices\n";
+
+		//for (int j = 0; j < nrVertices; j++)
+		//{
+		//	//VERTEX POSITION
+		//	cout << "Pos: " << meshes[i].meshVertices[j].vPos.mData[0] << " "
+		//		<< meshes[i].meshVertices[j].vPos.mData[1] << " "
+		//		<< meshes[i].meshVertices[j].vPos.mData[2] << "\n";
+
+		//	//VERTEX NORMAL
+		//	cout << "Normal: " << meshes[i].meshVertices[j].vNormal.mData[0] << " "
+		//		<< meshes[i].meshVertices[j].vNormal.mData[1] << " "
+		//		<< meshes[i].meshVertices[j].vNormal.mData[2] << "\n";
+
+		//	//VERTEX UV
+		//	cout << "UV: " << meshes[i].meshVertices[j].vUV.mData[0] << " "
+		//		<< meshes[i].meshVertices[j].vUV.mData[1] << "\n";
+
+		//	//VERTEX TANGENT
+		//	cout << "Tan: " << meshes[i].meshVertices[j].vTangent.mData[0] << " "
+		//		<< meshes[i].meshVertices[j].vTangent.mData[1] << " "
+		//		<< meshes[i].meshVertices[j].vTangent.mData[2] << "\n";
+		//}
+	}
+
+	cout << "\n>>>>>>>>>>CAMERAS<<<<<<<<<<\n";
+	int nrCameras = cameras.size();
+	for (int t = 0; t < nrCameras; t++)
+	{
+		cout << "Camera nr " << t << "\n";
+
+		cout << "Pos: " << cameras[t].cameraTransform.position.mData[0] << " "
+			<< cameras[t].cameraTransform.position.mData[1] << " "
+			<< cameras[t].cameraTransform.position.mData[2] << "\n";
+
+		cout << "Rot: " << cameras[t].cameraTransform.rotation.mData[0] << " "
+			<< cameras[t].cameraTransform.rotation.mData[1] << " "
+			<< cameras[t].cameraTransform.rotation.mData[2] << "\n";
+
+		cout << "View Direction: " << cameras[t].viewDirection.mData[0] << " "
+			<< cameras[t].viewDirection.mData[1] << " "
+			<< cameras[t].viewDirection.mData[2] << "\n";
+
+		cout << "Up Vector: " << cameras[t].upVector.mData[0] << " "
+			<< cameras[t].upVector.mData[1] << " "
+			<< cameras[t].upVector.mData[2] << "\n";
+
+		if (cameras[t].isOrtho == false)
+			cout << "Projection type: Perspective\n";
+		else 
+			cout << "Projection type: Orthographic\n";
+
+		PrintFbxMatrix(cameras[t].projectionMatrix);
+	}
+
+	cout << "\n>>>>>>>>>>LIGHTS<<<<<<<<<<\n";
+	int nrLights = lights.size();
+	for (int l = 0; l < nrLights; l++)
+	{
+		cout << "Light nr " << l << "\n";
+
+		cout << "Position: " << lights[l].lightTransform.position.mData[0] << " "
+			<< lights[l].lightTransform.position.mData[1] << " "
+			<< lights[l].lightTransform.position.mData[2] << "\n";
+
+		cout << "Color: " << lights[l].color.mData[0] << " "
+			<< lights[l].color.mData[1] << " "
+			<< lights[l].color.mData[2] << "\n";
+
+		cout << "Intensity: " << lights[l].intensity << "\n";
+	}
+}
+
+void Reader::PrintFbxMatrix(FbxMatrix inMatrix)
+{
+	cout << "\nMATRIX:\n";
+	for (int a = 0; a < 4; a++)
+	{
+		for (int b = 0; b < 4; b++)
+		{
+			cout << inMatrix.mData[a].mData[b] << "\t";
+		}
+		cout << "\n";
+	}
+	cout << "\n";
+}
+
+FbxString Reader::GetAttributeTypeName(FbxNodeAttribute::EType type)
 {
 	switch (type) 
 	{
