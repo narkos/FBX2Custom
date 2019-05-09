@@ -13,6 +13,11 @@ Reader::~Reader()
 
 }
 
+FbxFileHeader* Reader::GetHeader()
+{
+	return &globalHeader;
+}
+
 bool Reader::ImportFBX()
 {
 	//Create the FBX SDK Manager

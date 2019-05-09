@@ -29,5 +29,8 @@
       <Filter>OurFiles\HFiles</Filter>
     </ClInclude>
     <ClInclude Include="FBXImport.h" />
+    <ClInclude Include="Assets.h">
+      <Filter>OurFiles\HFiles</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

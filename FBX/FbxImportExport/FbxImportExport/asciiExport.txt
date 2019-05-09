@@ -1,0 +1,4 @@
+Meshes: 2
+Lights: 1
+Materials: 0
+Cameras: 1

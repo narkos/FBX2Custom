@@ -1,6 +1,6 @@
 //#include <iostream>
 #include "FBXImport.h"
-
+#include "CustomExporter.h"
 //#inlcude <fbxfilesdk/fbxio/fbxiosettings.h>
 
 #pragma comment(lib, "libfbxsdk-md.lib")
@@ -22,6 +22,9 @@ int main() {
 
 	importer->PrintTestData();
 
+	//BinaryWriter::CreateFile();
+	
+	AsciiWriter::CreateFile(importer->GetHeader());
 
 	//FBXSDK_printf("\nTest Where does this go?\n"); //Also TEST
 	

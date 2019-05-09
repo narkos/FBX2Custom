@@ -63,3 +63,19 @@ namespace BinaryWriter {
 		return;
 	}
 }
+
+namespace AsciiWriter {
+	void CreateFile(FbxFileHeader* globalHeader)
+	{
+		cout << globalHeader->meshCount;
+
+		ofstream asciiFile;
+		asciiFile.open("asciiExport.txt");
+		asciiFile << "Meshes: " << globalHeader->meshCount << endl;
+		asciiFile << "Lights: " << globalHeader->lightCount << endl;
+		asciiFile << "Materials: " << globalHeader->materialCount << endl;
+		asciiFile << "Cameras: " << globalHeader->cameraCount << endl;
+
+		asciiFile.close();
+	}
+}

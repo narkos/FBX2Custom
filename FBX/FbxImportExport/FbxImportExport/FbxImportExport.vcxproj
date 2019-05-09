@@ -80,6 +80,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Assets.h" />
     <ClInclude Include="CustomExporter.h" />
     <ClInclude Include="CustomFormat.h" />
     <ClInclude Include="FBXImport.h" />
