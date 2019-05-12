@@ -1,6 +1,7 @@
 #pragma once
 #include <fbxsdk.h>
 #include <iostream>
+#include <array>
 #include <vector>
 #include "Assets.h"
 //#include <DirectXMath.h>	//Neccessary if use of XMFLOATS etc. 
@@ -29,6 +30,9 @@ public:
 	bool ReadSceneData(FbxScene* scene);
 
 	FbxFileHeader* GetHeader();
+	vector<Mesh>& GetMeshes();
+
+
 
 	Mesh ProcessMesh(FbxNode* currentNode, FbxScene* scene);
 	FbxDouble3 ProcessNormals(FbxMesh* mesh, int index, int vertexNr);

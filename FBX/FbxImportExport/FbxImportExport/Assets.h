@@ -22,21 +22,21 @@ struct Vertex
 	FbxDouble3 vBiTangent;
 };
 
+struct Transform
+{
+	string name;
+	FbxDouble3 position;
+	FbxDouble3 scale;
+	FbxDouble3 rotation;
+};
+
 struct MeshHeader
 {
 	int vertexCount;
 	//int normalCount; ??
 	int uvCount;
 	int faceIndexCount; //Vertex count * 3
-	vector<int> meshIndices; //Prolly move
-};
-
-struct Transform
-{
-	const char* name;
-	FbxDouble3 position;
-	FbxDouble3 scale;
-	FbxDouble3 rotation;
+	int triangleCount;
 };
 
 struct Mesh
@@ -44,8 +44,10 @@ struct Mesh
 	Transform meshTransform; //Be here or in the mesh header?
 	MeshHeader meshHeader;
 	//Vertex* meshVertexList;
+	vector<array<float, 4>> controlPoints;
 	vector<Vertex> meshVertices; //Original
 	vector<Vertex> meshVertexListNoIndex; //New Because of Simon - ACTUALLY HAS INDICES OMEGALUL
+	vector<int> meshIndices;
 };
 
 struct Camera

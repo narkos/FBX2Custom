@@ -1,7 +1,12 @@
 #pragma once
 
-#include "Assets.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <fbxsdk.h>
 
+#include "Assets.h"
+#include "FBXImport.h"
 
 namespace BinaryWriter {
 	void CreateFile();
@@ -18,5 +23,9 @@ namespace BinaryWriter {
 }
 
 namespace AsciiWriter {
-	void CreateFile(FbxFileHeader* header);
+	void CreateFile(Reader* readData);
+	void WriteMesh(Mesh* mesh, ofstream* file);
+	string WriteMeshHeader(Mesh* mesh);
+	string WriteFbxDoubleVector(FbxDouble3 vec);
+	string WriteTransform(Transform transform);
 }

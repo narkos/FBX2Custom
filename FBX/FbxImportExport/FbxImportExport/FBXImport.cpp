@@ -1,4 +1,5 @@
 #include "FBXImport.h"
+#include <string.h>
 
 using namespace std;
 
@@ -16,6 +17,11 @@ Reader::~Reader()
 FbxFileHeader* Reader::GetHeader()
 {
 	return &globalHeader;
+}
+
+vector<Mesh> &Reader::GetMeshes()
+{
+	return meshes;
 }
 
 bool Reader::ImportFBX()
@@ -42,7 +48,7 @@ bool Reader::ImportFBX()
 
 	//Define file name. Who needs to be dynamic yo
 	//const char* fbxFilename = "testFileFBX.fbx";
-	const char* fbxFilename = "testFileFBX_triangulated.fbx";
+	//const char* fbxFilename = "testFileFBX_triangulated.fbx";
 	//const char* fbxFilename = "testFileFBX_triangulated_Lights.fbx";
 	//const char* fbxFilename = "testFileFBX_blend_shapes.fbx";
 	//const char* fbxFilename = "Animation_Only.fbx";
@@ -50,6 +56,7 @@ bool Reader::ImportFBX()
 	//const char* fbxFilename = "testFileFBX_Animation_Layer_bake.fbx";
 	//const char* fbxFilename = "BlendshapeTest.fbx";
 	//const char* fbxFilename = "Animation_Only_Preserve_bake.fbx";
+	const char* fbxFilename = "sexyCube.fbx";
 
 	//Initialize the damn importher. 
 	bool lImportStatus = fbxImporter->Initialize(fbxFilename, -1, lSdkManager->GetIOSettings());
@@ -167,6 +174,17 @@ Mesh Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene)
 	int uvCount = mesh->GetTextureUVCount();
 	int faceIndexCount = mesh->GetPolygonVertexCount();	//Vertex count * 3
 	
+	
+	FbxVector4* controlPoints = mesh->GetControlPoints();
+	tempMesh.controlPoints.reserve(vertexCount);
+	for (unsigned int i = 0; i < vertexCount; i++)
+	{
+		array<float, 4> pos { controlPoints[i][0] , controlPoints[i][1] , controlPoints[i][2] , controlPoints[i][3] };
+		tempMesh.controlPoints.push_back(pos);
+
+	}
+
+
 	int vertexNr = 0; //Keep track of the number of verts we fill our tempMesh with. 
 
 	FbxLayerElementUV* meshUV = mesh->GetElementUV(0);	//Enable us to get the UV's from the UV Layer of the Mesh
@@ -175,6 +193,7 @@ Mesh Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene)
 	tempMesh.meshHeader.vertexCount = vertexCount;	//Fill the Mesh's-Header
 	tempMesh.meshHeader.uvCount = uvCount;			//Fill the Mesh's-Header
 	tempMesh.meshHeader.faceIndexCount = faceIndexCount;	//Fill the Mesh's-Header
+	tempMesh.meshHeader.triangleCount = triangleCount;
 
 	tempMesh.meshTransform = GetNodeTransform(currentNode);	//Get Mesh Transform
 
@@ -274,7 +293,7 @@ Mesh Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene)
 			//cout << index << " ! " << UVIndex << "\n";
 			//cout << vertexNr << " ";
 
-			tempMesh.meshHeader.meshIndices.push_back(index);	//Fill the mesh index list
+			tempMesh.meshIndices.push_back(index);	//Fill the mesh index list
 
 			tempVertex.vPos = mesh->GetControlPointAt(index); //Get Vertex Position
 			tempVertex.vNormal = ProcessNormals(mesh, index, vertexNr);	//Get vertex Normal
@@ -287,6 +306,7 @@ Mesh Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene)
 			tempMesh.meshVertices.push_back(tempVertex);
 		}
 	}
+
 	cout << "\nJust looped trough -" << vertexNr << "- polygon vertices in mesh -" << currentNode->GetName() << "-\n\n";
 	return tempMesh;
 }

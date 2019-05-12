@@ -24,7 +24,7 @@ int main() {
 
 	//BinaryWriter::CreateFile();
 	
-	AsciiWriter::CreateFile(importer->GetHeader());
+	AsciiWriter::CreateFile(importer);
 
 	//FBXSDK_printf("\nTest Where does this go?\n"); //Also TEST
 	

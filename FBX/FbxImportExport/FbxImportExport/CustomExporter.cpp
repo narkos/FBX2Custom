@@ -19,8 +19,6 @@
 //
 //}
 
-#include <iostream>
-#include <fstream>
 #include <string.h>
 #include "CustomExporter.h"
 
@@ -65,17 +63,78 @@ namespace BinaryWriter {
 }
 
 namespace AsciiWriter {
-	void CreateFile(FbxFileHeader* globalHeader)
+	void CreateFile(Reader* readData)
 	{
+		FbxFileHeader* globalHeader = readData->GetHeader();
 		cout << globalHeader->meshCount;
 
+		
 		ofstream asciiFile;
-		asciiFile.open("asciiExport.txt");
+		asciiFile.open("Exports/asciiExport.txt");
 		asciiFile << "Meshes: " << globalHeader->meshCount << endl;
 		asciiFile << "Lights: " << globalHeader->lightCount << endl;
 		asciiFile << "Materials: " << globalHeader->materialCount << endl;
 		asciiFile << "Cameras: " << globalHeader->cameraCount << endl;
 
+		vector<Mesh> meshes = readData->GetMeshes();
+		for (int i = 0; i < meshes.size(); i++)
+		{
+			asciiFile << endl;
+			AsciiWriter::WriteMesh(&meshes.at(i), &asciiFile);
+
+		}
+
 		asciiFile.close();
+	}
+
+	void WriteMesh(Mesh* mesh, ofstream* file)
+	{
+		*file << AsciiWriter::WriteMeshHeader(mesh).c_str();
+	}
+
+	string WriteMeshHeader(Mesh* mesh)
+	{
+		string outstring;
+		outstring = WriteTransform(mesh->meshTransform);
+		outstring += "Vertex Count: " + to_string(mesh->meshHeader.vertexCount) + "\n";
+		outstring += "Triangle Count: " + to_string(mesh->meshHeader.triangleCount) + "\n";
+		outstring += "UV Count: " + to_string(mesh->meshHeader.uvCount) + "\n";
+		outstring += "Face Index Count: " + to_string(mesh->meshHeader.faceIndexCount) + "\n";
+
+		outstring += "Vertices:\n";
+
+		for (unsigned int i = 0; i < mesh->meshHeader.vertexCount; i++)
+		{
+			outstring 
+				+= to_string(mesh->controlPoints.at(i)[0]) + " " 
+				+ to_string(mesh->controlPoints.at(i)[1]) + " "
+				+ to_string(mesh->controlPoints.at(i)[2]) + " "
+				+ to_string(mesh->controlPoints.at(i)[3]) + " \n";
+		}
+
+		for (unsigned int i = 0; i < mesh->meshIndices.size(); i++)
+		{
+			cout << endl << mesh->meshIndices.at(i);
+		}
+
+		cout << outstring.c_str();
+		return outstring;
+	}
+
+	string WriteFbxDoubleVector(FbxDouble3 vec)
+	{
+		string outstring;
+		outstring = to_string(vec[0]) + ", " + to_string(vec[1]) + ", " + to_string(vec[2]);
+		return outstring;
+	}
+
+	string WriteTransform(Transform transform)
+	{
+		string outstring;
+		outstring = "Transform: " + transform.name + "\n";
+		outstring += "Position: " + WriteFbxDoubleVector(transform.position) + "\n";
+		outstring += "Scale: " + WriteFbxDoubleVector(transform.scale) + "\n";
+		outstring += "Rotation: " + WriteFbxDoubleVector(transform.rotation) + "\n";
+		return outstring;
 	}
 }
