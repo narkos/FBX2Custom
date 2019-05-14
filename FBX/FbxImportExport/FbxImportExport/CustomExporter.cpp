@@ -111,13 +111,29 @@ namespace AsciiWriter {
 				+ to_string(mesh->controlPoints.at(i)[2]) + " "
 				+ to_string(mesh->controlPoints.at(i)[3]) + " \n";
 		}
-
-		for (unsigned int i = 0; i < mesh->meshIndices.size(); i++)
+		cout << outstring.c_str() << endl;
+		//cout << to_string(mesh->meshIndices.size()) << "  " << to_string(mesh->meshHeader.faceIndexCount) << endl << endl;
+		int counter = 0;
+		for (unsigned int i = 0; i < mesh->meshHeader.faceIndexCount; i++)
 		{
-			cout << endl << mesh->meshIndices.at(i);
+			switch (counter)
+			{
+			case 0:
+				outstring += "[ " + to_string(mesh->meshIndices.at(i)) + " , ";
+				break;
+			case 1:
+				outstring += to_string(mesh->meshIndices.at(i)) + " , ";
+				break;
+			case 2:
+				outstring += to_string(mesh->meshIndices.at(i)) + " ]\n";
+				counter = -1;
+				break;
+			}
+			counter++;
+			//cout << endl << mesh->meshIndices.at(i);
 		}
-
-		cout << outstring.c_str();
+		cout << outstring.c_str() << endl;
+		
 		return outstring;
 	}
 
