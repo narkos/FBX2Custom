@@ -2,11 +2,13 @@
 #ifndef ASSETS_H
 #include <fbxsdk.h>
 #include <vector>
+#include <string>
 
 using namespace std;
 
 struct FbxFileHeader
 {
+    int transformCount = 0;
 	int meshCount = 0;	//Not rly needed just check vector.size
 	int materialCount = 0;
 	int lightCount = 0;
@@ -147,7 +149,6 @@ public:
 
 struct Camera
 {
-public:
 	Transform cameraTransform;
 	FbxDouble3 viewDirection;	//AKA LookAt
 	FbxDouble3 upVector;
@@ -156,9 +157,11 @@ public:
 	FbxMatrix projectionMatrix;
 	//double rot[4]; //Quaternion rotation of the camera (x, y, z, w)
 
+public:
     char* ToRaw()
     {
         char* raw = new char[sizeof(MeshHeader)];
+        char* transformRaw = new char[sizeof(Transform)];
         //strcpy(raw, transformName.c_str());
         //strcat(raw, to_string(vertexCount).c_str());
         //strcat(raw, to_string(uvCount).c_str());

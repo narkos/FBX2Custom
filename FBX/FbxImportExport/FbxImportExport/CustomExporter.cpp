@@ -29,7 +29,9 @@ namespace CustomWriter
     void WriteFile(string fileName, Reader* reader)
     {
         ofstream file;
-        file.open(fileName);
+        file.open(fileName, ios::out | ios::binary);
+
+        file.write(reader->GetTransforms()[0].ToRaw(), strlen(reader->GetTransforms()[0].ToRaw()));
 
         char* extractedData;
         extractedData = ConvertMeshesToRaw(reader);
@@ -38,6 +40,8 @@ namespace CustomWriter
         extractedData = ConvertCamerasToRaw(reader);
 
         file.close();
+
+
 
        /* ofstream myBinFile;
         myBinFile.open("example.lul", ios::out | ios::binary);
@@ -59,22 +63,22 @@ namespace CustomWriter
 
     char* ConvertMeshesToRaw(Reader* reader)
     {
-
+        return NULL;
     }
 
     char* ConvertLightsToRaw(Reader* reader)
     {
-
+        return NULL;
     }
 
     char* ConvertMaterialsToRaw(Reader* reader) 
     {
-
+        return NULL;
     }
 
     char* ConvertCamerasToRaw(Reader* reader)
     {
-
+        return NULL;
     }
 }
 

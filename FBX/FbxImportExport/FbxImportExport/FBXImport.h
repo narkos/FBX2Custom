@@ -18,6 +18,7 @@ private:
 	//Data to store for production of custom file:
 	FbxFileHeader globalHeader;	//Global File Header
 
+    vector<Transform> transforms;
 	vector<Mesh> meshes; //Fill this with the dada
 	vector<Camera> cameras;
 	vector<Light> lights;
@@ -31,14 +32,16 @@ public:
 
 	FbxFileHeader* GetHeader();
 	vector<Mesh>& GetMeshes();
+    vector<Light>& GetLights();
+    vector<Camera>& GetCameras();
+    vector<Transform>& GetTransforms();
 
+	void ProcessMesh(FbxNode* currentNode, FbxScene* scene, Mesh& omesh, Transform& otransform);
+    void ProcessCamera(FbxNode* currentNode, Camera& ocamera, Transform& otransform);
+    void ProcessLight(FbxNode* currentNode, Light& olight, Transform& otransform);
 
-
-	Mesh ProcessMesh(FbxNode* currentNode, FbxScene* scene);
 	FbxDouble3 ProcessNormals(FbxMesh* mesh, int index, int vertexNr);
 	FbxDouble3 ProcessTangents(FbxMesh* mesh, int index, int vertexNr);
-	Camera ProcessCamera(FbxNode* currentNode);
-	Light ProcessLight(FbxNode* currentNode);
 	Transform GetNodeTransform(FbxNode* currentNode);
 	void PrintNodeGeneralData(FbxNode* pNode);
 	void PrintAttribute(FbxNodeAttribute* pAttribute);

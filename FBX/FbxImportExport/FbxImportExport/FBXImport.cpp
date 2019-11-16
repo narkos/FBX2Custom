@@ -24,6 +24,21 @@ vector<Mesh> &Reader::GetMeshes()
 	return meshes;
 }
 
+vector<Light>& Reader::GetLights()
+{
+    return lights;
+}
+
+vector<Camera>& Reader::GetCameras()
+{
+    return cameras;
+}
+
+vector<Transform>& Reader::GetTransforms()
+{
+    return transforms;
+}
+
 bool Reader::ImportFBX()
 {
 	//Create the FBX SDK Manager
@@ -119,52 +134,70 @@ bool Reader::ReadSceneData(FbxScene* scene)
 	//ANINATION TESTINGANINATION TESTINGANINATION TESTINGANINATION TESTINGANINATION TESTING
 
 	//https://forums.autodesk.com/t5/fbx-forum/useful-things-you-might-want-to-know-about-fbxsdk/td-p/4821177
-	if (lRootNode)
-		for (int i = 0; i < lRootNode->GetChildCount(); i++)	//Traverse through every node in the scene.
-		{
-			//Fill our objects with data beep bop.  
-			currentNode = lRootNode->GetChild(i);	//Get the node at hand
-			
-			//PrintNodeGeneralData(currentNode);	//Print each nodes data and it's kids, if it ever had any...
+    if (lRootNode)
+    {
+        for (int i = 0; i < lRootNode->GetChildCount(); i++)	//Traverse through every node in the scene.
+        {
+            //Fill our objects with data beep bop.  
+            currentNode = lRootNode->GetChild(i);	//Get the node at hand
 
-			if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eMesh)
-			{
-				globalHeader.meshCount += 1;	//Increment count
-				//meshes[i] = ProcessMesh(currentNode);
-				meshes.push_back(ProcessMesh(currentNode, scene));
-			}
-			else if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eCamera)
-			{
-				globalHeader.cameraCount += 1;	//Increment count
-				cameras.push_back(ProcessCamera(currentNode));
-			}
-			else if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eLight)
-			{
-				globalHeader.lightCount += 1;	//Increment count
-				lights.push_back(ProcessLight(currentNode));
-			}
-			else if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eShape)
-			{
-				cout << "";
-			}
-			else if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eUnknown)
-			{
-				cout << "";
-			}
-			else
-			{
-				cout << "Theres something else!";
-				PrintAttribute(currentNode->GetNodeAttributeByIndex(0));
-			}
-			//How to get TEXTURES/MATERIALS?? It's no node
+            //PrintNodeGeneralData(currentNode);	//Print each nodes data and it's kids, if it ever had any...
 
-			
-		}
+            if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eMesh)
+            {
+                //meshes[i] = ProcessMesh(currentNode);
+                Mesh mesh;
+                Transform transform;
+                ProcessMesh(currentNode, scene, mesh, transform);
+                meshes.push_back(mesh);
+                transforms.push_back(transform);
+
+                globalHeader.transformCount += 1;
+                globalHeader.meshCount += 1;
+            }
+            else if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eCamera)
+            {
+                Camera camera;
+                Transform transform;
+                ProcessCamera(currentNode, camera, transform);
+                cameras.push_back(camera);
+                transforms.push_back(transform);
+
+                globalHeader.transformCount += 1;
+                globalHeader.cameraCount += 1;
+            }
+            else if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eLight)
+            {
+                Light light;
+                Transform transform;
+                ProcessLight(currentNode, light, transform);
+                lights.push_back(light);
+                transforms.push_back(transform);
+
+                globalHeader.transformCount += 1;
+                globalHeader.lightCount += 1;
+            }
+            else if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eShape)
+            {
+                cout << "";
+            }
+            else if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eUnknown)
+            {
+                cout << "";
+            }
+            else
+            {
+                cout << "Theres something else!";
+                PrintAttribute(currentNode->GetNodeAttributeByIndex(0));
+            }
+            //How to get TEXTURES/MATERIALS?? It's no node			
+        }
+    }
 
 	return 0;
 }
 
-Mesh Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene)
+void Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene, Mesh& omesh, Transform& otransform)
 {
 	Mesh tempMesh;
 	Vertex tempVertex;
@@ -308,7 +341,44 @@ Mesh Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene)
 	}
 
 	cout << "\nJust looped trough -" << vertexNr << "- polygon vertices in mesh -" << currentNode->GetName() << "-\n\n";
-	return tempMesh;
+    omesh = tempMesh;
+    otransform = GetNodeTransform(currentNode);
+}
+
+void Reader::ProcessCamera(FbxNode* currentNode, Camera& ocamera, Transform& otransform)
+{
+    FbxCamera* fbxCamera = currentNode->GetCamera();
+    Camera tempCamera;
+
+    tempCamera.cameraTransform = GetNodeTransform(currentNode);		//Get Camera Transform
+
+    if (fbxCamera->ProjectionType.Get() == FbxCamera::EProjectionType::eOrthogonal)
+        tempCamera.isOrtho = true;
+    else
+        tempCamera.isOrtho = false;	//Perspective (ePerspective)
+
+    tempCamera.viewDirection = fbxCamera->EvaluateLookAtPosition();
+    tempCamera.upVector = fbxCamera->UpVector.Get();
+    tempCamera.projectionMatrix = fbxCamera->ComputeProjectionMatrix(1920, 1080);	//Ehhh, these numbers should be???
+    //PrintFbxMatrix(tempCamera.projectionMatrix);
+    //TO DO: FOV?
+    //fbxCamera->FieldOfViewX.Get()
+
+    ocamera = tempCamera;
+    otransform = GetNodeTransform(currentNode);
+}
+
+void Reader::ProcessLight(FbxNode* currentNode, Light& olight, Transform& otransform)
+{
+    Light tempLight;
+    FbxLight* fbxLight = currentNode->GetLight();
+
+    tempLight.lightTransform = GetNodeTransform(currentNode);
+    tempLight.color = fbxLight->Color.Get();
+    tempLight.intensity = fbxLight->Intensity.Get();
+
+    olight = tempLight;
+    otransform = GetNodeTransform(currentNode);
 }
 
 FbxDouble3 Reader::ProcessNormals(FbxMesh* mesh, int index, int vertexNr)
@@ -351,40 +421,6 @@ FbxDouble3 Reader::ProcessTangents(FbxMesh* mesh, int index, int vertexNr)
 		tempTangent = meshTangent->GetDirectArray().GetAt(vertexNr);
 
 	return tempTangent;
-}
-
-Camera Reader::ProcessCamera(FbxNode* currentNode)
-{
-	FbxCamera* fbxCamera = currentNode->GetCamera();
-	Camera tempCamera;
-
-	tempCamera.cameraTransform = GetNodeTransform(currentNode);		//Get Camera Transform
-
-	if (fbxCamera->ProjectionType.Get() == FbxCamera::EProjectionType::eOrthogonal)
-		tempCamera.isOrtho = true;
-	else
-		tempCamera.isOrtho = false;	//Perspective (ePerspective)
-
-	tempCamera.viewDirection = fbxCamera->EvaluateLookAtPosition();
-	tempCamera.upVector = fbxCamera->UpVector.Get();
-	tempCamera.projectionMatrix = fbxCamera->ComputeProjectionMatrix(1920, 1080);	//Ehhh, these numbers should be???
-	//PrintFbxMatrix(tempCamera.projectionMatrix);
-	//TO DO: FOV?
-	//fbxCamera->FieldOfViewX.Get()
-
-	return tempCamera;
-}
-
-Light Reader::ProcessLight(FbxNode* currentNode)
-{
-	Light tempLight;
-	FbxLight* fbxLight = currentNode->GetLight();
-
-	tempLight.lightTransform = GetNodeTransform(currentNode);
-	tempLight.color = fbxLight->Color.Get();
-	tempLight.intensity= fbxLight->Intensity.Get();
-
-	return tempLight;
 }
 
 Transform Reader::GetNodeTransform(FbxNode* currentNode)
