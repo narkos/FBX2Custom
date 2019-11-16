@@ -8,24 +8,33 @@
 #include "Assets.h"
 #include "FBXImport.h"
 
-namespace BinaryWriter {
-	void CreateFile();
-	struct Vertex 
-	{
-		char name[50];
-		int position[3];
-		/*Vertex(char* p_name, int p_pos[3])
-		{
-			name = p_name;
-			position = p_pos;
-		}*/
-	};
+namespace CustomWriter
+{
+    void WriteFile(string fileName, Reader* reader);
+    char* ConvertMeshesToRaw(Reader* reader);
+    char* ConvertLightsToRaw(Reader* reader);
+    char* ConvertMaterialsToRaw(Reader* reader);
+    char* ConvertCamerasToRaw(Reader* reader);
 }
 
-namespace AsciiWriter {
-	void CreateFile(Reader* readData);
-	void WriteMesh(Mesh* mesh, ofstream* file);
-	string WriteMeshHeader(Mesh* mesh);
-	string WriteFbxDoubleVector(FbxDouble3 vec);
-	string WriteTransform(Transform transform);
-}
+//namespace BinaryWriter {
+//	void CreateFile();
+//	struct Vertex 
+//	{
+//		char name[50];
+//		int position[3];
+//		/*Vertex(char* p_name, int p_pos[3])
+//		{
+//			name = p_name;
+//			position = p_pos;
+//		}*/
+//	};
+//}
+//
+//namespace AsciiWriter {
+//	void CreateFile(Reader* readData);
+//	void WriteMesh(Mesh* mesh, ofstream* file);
+//	string WriteMeshHeader(Mesh* mesh);
+//	string WriteFbxDoubleVector(FbxDouble3 vec);
+//	string WriteTransform(Transform transform);
+//}

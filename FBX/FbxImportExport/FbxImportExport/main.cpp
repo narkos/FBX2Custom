@@ -24,7 +24,8 @@ int main() {
 
 	//BinaryWriter::CreateFile();
 	
-	AsciiWriter::CreateFile(importer);
+	//AsciiWriter::CreateFile(importer);
+    CustomWriter::WriteFile("Poop", importer);
 
 	//FBXSDK_printf("\nTest Where does this go?\n"); //Also TEST
 	

@@ -195,7 +195,7 @@ Mesh Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene)
 	tempMesh.meshHeader.faceIndexCount = faceIndexCount;	//Fill the Mesh's-Header
 	tempMesh.meshHeader.triangleCount = triangleCount;
 
-	tempMesh.meshTransform = GetNodeTransform(currentNode);	//Get Mesh Transform
+	tempMesh.meshHeader.transformName = GetNodeTransform(currentNode).name;	//Get Mesh Transform
 
 	//tempMesh.meshVertexList = new Vertex[faceIndexCount];
 	
