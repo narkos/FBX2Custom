@@ -11,6 +11,7 @@
 namespace CustomWriter
 {
     void WriteFile(string fileName, Reader* reader);
+    char* ConvertHeaderToRaw(Reader* reader);
     char* ConvertMeshesToRaw(Reader* reader);
     char* ConvertLightsToRaw(Reader* reader);
     char* ConvertMaterialsToRaw(Reader* reader);

@@ -14,14 +14,15 @@ struct FbxFileHeader
 	int lightCount = 0;
 	int cameraCount = 0;
 
-    char* ToRaw()
+    string ToRaw()
     {
-        char* raw = new char[sizeof(FbxFileHeader)];
-        strcpy(raw, to_string(meshCount).c_str());
-        strcat(raw, to_string(materialCount).c_str());
-        strcat(raw, to_string(lightCount).c_str());
-        strcat(raw, to_string(cameraCount).c_str());
-        return raw;
+        string rawString = "";
+        rawString += to_string(transformCount);
+        rawString += to_string(meshCount);
+        rawString += to_string(materialCount);
+        rawString += to_string(lightCount);
+        rawString += to_string(cameraCount);
+        return rawString;
     }
 };
 
@@ -34,36 +35,36 @@ struct Vertex
 	FbxDouble3 vBiTangent;
 
 public:
-    char* ToRaw()
+    string ToRaw()
     {
-        char* raw = new char[sizeof(Vertex)];
+        string rawString = "";
 
         for (int i = 0; i < 3; i++)
         {
-            strcat(raw, to_string(vPos[i]).c_str());
+            rawString += to_string(vPos[i]);
         }
 
         for (int i = 0; i < 2; i++)
         {
-            strcat(raw, to_string(vUV[i]).c_str());
+            rawString += to_string(vUV[i]);
         }
 
         for (int i = 0; i < 3; i++)
         {
-            strcat(raw, to_string(vNormal[i]).c_str());
+            rawString += to_string(vNormal[i]).c_str();
         }
 
         for (int i = 0; i < 3; i++)
         {
-            strcat(raw, to_string(vTangent[i]).c_str());
+            rawString += to_string(vTangent[i]).c_str();
         }
 
         for (int i = 0; i < 3; i++)
         {
-            strcat(raw, to_string(vBiTangent[i]).c_str());
+            rawString += to_string(vBiTangent[i]).c_str();
         }
 
-        return raw;
+        return rawString;
     }
 };
 
@@ -75,27 +76,27 @@ struct Transform
 	FbxDouble3 rotation;
 
 public:
-    char* ToRaw()
+    string ToRaw()
     {
-        char* raw = new char[sizeof(Transform)];
-        strcpy(raw, name.c_str());
+        string rawString = "";
+        rawString += name;
 
         for (int i = 0; i < 3; i++)
         {
-            strcat(raw, to_string(position[i]).c_str());
+            rawString += to_string(position[i]);
         }
 
         for (int i = 0; i < 3; i++)
         {
-            strcat(raw, to_string(scale[i]).c_str());
+            rawString += to_string(scale[i]);
         }
 
         for (int i = 0; i < 3; i++)
         {
-            strcat(raw, to_string(rotation[i]).c_str());
+            rawString += to_string(rotation[i]);
         }
 
-        return raw;
+        return rawString;
     }
 };
 
@@ -103,21 +104,21 @@ struct MeshHeader
 {
     string transformName;
 	int vertexCount;
+
+
 	//int normalCount; ??
+    int controlPointCount;
 	int uvCount;
 	int faceIndexCount; //Vertex count * 3
 	int triangleCount;
 
 public:
-    char* ToRaw()
+    string ToRaw()
     {
-        char* raw = new char[sizeof(MeshHeader)];
-        strcpy(raw, transformName.c_str());
-        strcat(raw, to_string(vertexCount).c_str());
-        strcat(raw, to_string(uvCount).c_str());
-        strcat(raw, to_string(faceIndexCount).c_str());
-        strcat(raw, to_string(triangleCount).c_str());
-        return raw;
+        string rawString = "";
+        rawString += transformName;
+        rawString += to_string(vertexCount);
+        return rawString;
     }
 };
 
@@ -127,65 +128,77 @@ struct Mesh
 	//Vertex* meshVertexList;
 	vector<array<float, 4>> controlPoints;
 	vector<Vertex> meshVertices; //Original
-	vector<Vertex> meshVertexListNoIndex; //New Because of Simon - ACTUALLY HAS INDICES OMEGALUL
 	vector<int> meshIndices;
 
 public:
-    char* ToRaw()
+    string ToRaw()
     {
-        char* raw;
-        char* header = meshHeader.ToRaw();
-        char* body;
+        string rawString = "";
+        rawString += meshHeader.ToRaw();
 
-        int rawSize = strlen(header) + strlen(body);
-        raw = new char[rawSize];
+        for (int i = 0; i < meshHeader.vertexCount; i++)
+        {
+            rawString += meshVertices[i].ToRaw();
+        }
 
-        strcpy(raw, header);
-        strcat(raw, body);
-
-        return raw;
+        return rawString;
     }
 };
 
 struct Camera
 {
-	Transform cameraTransform;
+    string transformName;
 	FbxDouble3 viewDirection;	//AKA LookAt
 	FbxDouble3 upVector;
 	//FbxDouble3 right;	//Can't find property in FBX
 	bool isOrtho;
+
+
 	FbxMatrix projectionMatrix;
 	//double rot[4]; //Quaternion rotation of the camera (x, y, z, w)
 
 public:
-    char* ToRaw()
+    string ToRaw()
     {
-        char* raw = new char[sizeof(MeshHeader)];
-        char* transformRaw = new char[sizeof(Transform)];
-        //strcpy(raw, transformName.c_str());
-        //strcat(raw, to_string(vertexCount).c_str());
-        //strcat(raw, to_string(uvCount).c_str());
-        //strcat(raw, to_string(faceIndexCount).c_str());
-        //strcat(raw, to_string(triangleCount).c_str());
-        return raw;
+        string rawString = "";
+        rawString += transformName;
+
+        for (int i = 0; i < 3; i++)
+        {
+            rawString += viewDirection[i];
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+            rawString += upVector[i];
+        }
+
+        rawString += to_string(isOrtho);
+
+        return rawString;
     }
 };
 
 struct Light
 {
-	Transform lightTransform;
+    string transformName;
 	FbxDouble3 color;
 	FbxDouble intensity;
 
-    char* ToRaw()
+public:
+    string ToRaw()
     {
-        char* raw = new char[sizeof(MeshHeader)];
-        //strcpy(raw, transformName.c_str());
-        //strcat(raw, to_string(vertexCount).c_str());
-        //strcat(raw, to_string(uvCount).c_str());
-        //strcat(raw, to_string(faceIndexCount).c_str());
-        //strcat(raw, to_string(triangleCount).c_str());
-        return raw;
+        string rawString = "";
+        rawString += transformName;
+
+        for (int i = 0; i < 3; i++)
+        {
+            rawString += to_string(color[i]);
+        }
+
+        rawString += to_string(intensity).c_str();
+
+        return rawString;
     }
 };
 

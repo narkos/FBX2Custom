@@ -31,13 +31,17 @@ namespace CustomWriter
         ofstream file;
         file.open(fileName, ios::out | ios::binary);
 
-        file.write(reader->GetTransforms()[0].ToRaw(), strlen(reader->GetTransforms()[0].ToRaw()));
-
         char* extractedData;
+        extractedData = ConvertHeaderToRaw(reader);
+        file.write(extractedData, strlen(extractedData));
         extractedData = ConvertMeshesToRaw(reader);
+        file.write(extractedData, strlen(extractedData));
         extractedData = ConvertLightsToRaw(reader);
+        file.write(extractedData, strlen(extractedData));
         extractedData = ConvertMaterialsToRaw(reader);
+        file.write(extractedData, strlen(extractedData));
         extractedData = ConvertCamerasToRaw(reader);
+        file.write(extractedData, strlen(extractedData));
 
         file.close();
 
@@ -61,24 +65,65 @@ namespace CustomWriter
         return;
     }
 
+    char* ConvertHeaderToRaw(Reader* reader)
+    {
+        string rawString = "";
+        rawString += reader->GetHeader()->ToRaw();
+
+        char *raw = new char[strlen(rawString.c_str())];
+        strcpy(raw, rawString.c_str());
+        return raw;
+    }
+
     char* ConvertMeshesToRaw(Reader* reader)
     {
-        return NULL;
+        string rawString = "";
+        
+        for (int i = 0; i < reader->GetHeader()->meshCount; i++)
+        {
+            rawString += string(reader->GetMeshes()[i].ToRaw());
+        }
+
+        char *raw = new char[strlen(rawString.c_str())];
+        strcpy(raw, rawString.c_str());
+        return raw;
     }
 
     char* ConvertLightsToRaw(Reader* reader)
     {
-        return NULL;
+        string rawString = "";
+
+        for (int i = 0; i < reader->GetHeader()->lightCount; i++)
+        {
+            rawString += string(reader->GetLights()[i].ToRaw());
+        }
+
+        char *raw = new char[strlen(rawString.c_str())];
+        strcpy(raw, rawString.c_str());
+        return raw;
     }
 
     char* ConvertMaterialsToRaw(Reader* reader) 
     {
-        return NULL;
+        string rawString = "";
+
+        char *raw = new char[strlen(rawString.c_str())];
+        strcpy(raw, rawString.c_str());
+        return raw;
     }
 
     char* ConvertCamerasToRaw(Reader* reader)
     {
-        return NULL;
+        string rawString = "";
+
+        for (int i = 0; i < reader->GetHeader()->cameraCount; i++)
+        {
+            rawString += string(reader->GetCameras()[i].ToRaw());
+        }
+
+        char *raw = new char[strlen(rawString.c_str())];
+        strcpy(raw, rawString.c_str());
+        return raw;
     }
 }
 

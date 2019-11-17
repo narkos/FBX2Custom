@@ -202,28 +202,27 @@ void Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene, Mesh& omesh, Tra
 	Mesh tempMesh;
 	Vertex tempVertex;
 	FbxMesh* mesh = currentNode->GetMesh();	//Used GetGeometry before. Difference?
-	int vertexCount = mesh->GetControlPointsCount();
+	int controlPointCount = mesh->GetControlPointsCount();
 	int triangleCount = mesh->GetPolygonCount();
 	int uvCount = mesh->GetTextureUVCount();
 	int faceIndexCount = mesh->GetPolygonVertexCount();	//Vertex count * 3
 	
 	
 	FbxVector4* controlPoints = mesh->GetControlPoints();
-	tempMesh.controlPoints.reserve(vertexCount);
-	for (unsigned int i = 0; i < vertexCount; i++)
+	tempMesh.controlPoints.reserve(controlPointCount);
+	for (unsigned int i = 0; i < controlPointCount; i++)
 	{
 		array<float, 4> pos { controlPoints[i][0] , controlPoints[i][1] , controlPoints[i][2] , controlPoints[i][3] };
 		tempMesh.controlPoints.push_back(pos);
 
 	}
 
-
 	int vertexNr = 0; //Keep track of the number of verts we fill our tempMesh with. 
 
 	FbxLayerElementUV* meshUV = mesh->GetElementUV(0);	//Enable us to get the UV's from the UV Layer of the Mesh
 
 	//Mesh tempMesh; //Fill this with the dada
-	tempMesh.meshHeader.vertexCount = vertexCount;	//Fill the Mesh's-Header
+	tempMesh.meshHeader.controlPointCount = controlPointCount;	//Fill the Mesh's-Header
 	tempMesh.meshHeader.uvCount = uvCount;			//Fill the Mesh's-Header
 	tempMesh.meshHeader.faceIndexCount = faceIndexCount;	//Fill the Mesh's-Header
 	tempMesh.meshHeader.triangleCount = triangleCount;
@@ -340,6 +339,8 @@ void Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene, Mesh& omesh, Tra
 		}
 	}
 
+    tempMesh.meshHeader.vertexCount = vertexNr;
+
 	cout << "\nJust looped trough -" << vertexNr << "- polygon vertices in mesh -" << currentNode->GetName() << "-\n\n";
     omesh = tempMesh;
     otransform = GetNodeTransform(currentNode);
@@ -350,7 +351,7 @@ void Reader::ProcessCamera(FbxNode* currentNode, Camera& ocamera, Transform& otr
     FbxCamera* fbxCamera = currentNode->GetCamera();
     Camera tempCamera;
 
-    tempCamera.cameraTransform = GetNodeTransform(currentNode);		//Get Camera Transform
+    tempCamera.transformName = GetNodeTransform(currentNode).name;		//Get Camera Transform
 
     if (fbxCamera->ProjectionType.Get() == FbxCamera::EProjectionType::eOrthogonal)
         tempCamera.isOrtho = true;
@@ -373,7 +374,7 @@ void Reader::ProcessLight(FbxNode* currentNode, Light& olight, Transform& otrans
     Light tempLight;
     FbxLight* fbxLight = currentNode->GetLight();
 
-    tempLight.lightTransform = GetNodeTransform(currentNode);
+    tempLight.transformName = GetNodeTransform(currentNode).name;
     tempLight.color = fbxLight->Color.Get();
     tempLight.intensity = fbxLight->Intensity.Get();
 
@@ -509,13 +510,13 @@ void Reader::PrintTestData()
 	{
 		cout << "Camera nr " << t << "\n";
 
-		cout << "Pos: " << cameras[t].cameraTransform.position.mData[0] << " "
-			<< cameras[t].cameraTransform.position.mData[1] << " "
-			<< cameras[t].cameraTransform.position.mData[2] << "\n";
+		//cout << "Pos: " << cameras[t].cameraTransform.position.mData[0] << " "
+		//	<< cameras[t].cameraTransform.position.mData[1] << " "
+		//	<< cameras[t].cameraTransform.position.mData[2] << "\n";
 
-		cout << "Rot: " << cameras[t].cameraTransform.rotation.mData[0] << " "
-			<< cameras[t].cameraTransform.rotation.mData[1] << " "
-			<< cameras[t].cameraTransform.rotation.mData[2] << "\n";
+		//cout << "Rot: " << cameras[t].cameraTransform.rotation.mData[0] << " "
+		//	<< cameras[t].cameraTransform.rotation.mData[1] << " "
+		//	<< cameras[t].cameraTransform.rotation.mData[2] << "\n";
 
 		cout << "View Direction: " << cameras[t].viewDirection.mData[0] << " "
 			<< cameras[t].viewDirection.mData[1] << " "
@@ -539,9 +540,9 @@ void Reader::PrintTestData()
 	{
 		cout << "Light nr " << l << "\n";
 
-		cout << "Position: " << lights[l].lightTransform.position.mData[0] << " "
-			<< lights[l].lightTransform.position.mData[1] << " "
-			<< lights[l].lightTransform.position.mData[2] << "\n";
+		//cout << "Position: " << lights[l].lightTransform.position.mData[0] << " "
+		//	<< lights[l].lightTransform.position.mData[1] << " "
+		//	<< lights[l].lightTransform.position.mData[2] << "\n";
 
 		cout << "Color: " << lights[l].color.mData[0] << " "
 			<< lights[l].color.mData[1] << " "
