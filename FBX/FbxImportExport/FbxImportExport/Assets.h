@@ -25,6 +25,7 @@ struct Vertex
 struct Transform
 {
 	string name;
+	string parentName;
 	FbxDouble3 position;
 	FbxDouble3 scale;
 	FbxDouble3 rotation;

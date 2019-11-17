@@ -45,4 +45,10 @@ public:
 	void PrintTestData();
 	void PrintFbxMatrix(FbxMatrix inMatrix);
 	FbxString GetAttributeTypeName(FbxNodeAttribute::EType type);
+	void ReadAnimationLayers(FbxScene* scene);
+	void ReadAnimationCurves(FbxAnimLayer* currentLayer, FbxNode* currentNode);
+	void ExtractCurveData(FbxAnimCurve* curve);
+	void ReadDeformerData(FbxNode* currentNode);
+	//void PrintListCurveKeys(FbxAnimCurve* pCurve, FbxProperty* pProperty);
+	//void DisplayCurveKeys(FbxAnimCurve* pCurve);
 };

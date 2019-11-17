@@ -20,11 +20,11 @@ int main() {
 	
 	importer->ImportFBX(); //Now comes with self destruct b*tches
 
-	importer->PrintTestData();
+	//importer->PrintTestData();
 
 	//BinaryWriter::CreateFile();
 	
-	AsciiWriter::CreateFile(importer);
+	//AsciiWriter::CreateFile(importer);
 
 	//FBXSDK_printf("\nTest Where does this go?\n"); //Also TEST
 	
