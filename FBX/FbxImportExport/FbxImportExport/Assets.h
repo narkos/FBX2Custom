@@ -6,6 +6,92 @@
 
 using namespace std;
 
+class CharPointer {
+private:
+    int addCount = 0;
+    //char* currPointer = NULL;
+    vector<char*> pointers;
+    size_t currSize;
+public:
+    CharPointer()
+    {
+        addCount = 0;
+        //currPointer = NULL;
+    }
+
+    template <class T>
+    void Add(T data)
+    {
+        size_t size = sizeof(data);
+        char* newData = reinterpret_cast<char *>(&data);
+        
+        if (this->addCount == 0)
+        {
+            currSize = size;
+        }
+        else 
+        {
+            currSize = size + currSize;
+        }
+
+        //currPointer = new char[size];
+        
+        //strcpy(currPointer, newData, size);
+
+        char* tmpPointer = new char[size];
+        memcpy(tmpPointer, newData, size);
+
+        pointers.push_back(tmpPointer);
+
+        //if (this->addCount == 0)
+        //{
+
+        //}
+        //else 
+        //{
+        //    size_t prevSize = currSize;
+        //    char* prevData = currPointer;
+        //    currSize = currSize + size;
+        //    currPointer = new char[currSize];
+
+        //    strncpy(currPointer, prevData, prevSize);
+        //    strncpy(currPointer + prevSize, newData, size);
+        //    //strcat(currPointer, newData);
+
+        //    // TODO: Release prev data.
+        //}
+
+        this->addCount++;
+    }
+
+    char* Get()
+    {
+        char* allPointers = new char[currSize];
+
+        if (pointers.size() != 0)
+        {        
+            // TODO FIX MEMCPY N SHIET
+            memcpy(allPointers, pointers[0], 5);
+
+            for (int i = 1; i < pointers.size(); i++)
+            {
+                memcpy(allPointers, pointers[i], 5);
+            }
+
+            return allPointers;
+        }
+        else
+        {
+            return NULL;
+        }
+    }
+
+    int Size()
+    {
+        return currSize;
+    }
+};
+
 struct FbxFileHeader
 {
     int transformCount = 0;
@@ -14,15 +100,18 @@ struct FbxFileHeader
 	int lightCount = 0;
 	int cameraCount = 0;
 
-    string ToRaw()
+    char* ToRaw()
     {
-        string rawString = "";
-        rawString += to_string(transformCount);
-        rawString += to_string(meshCount);
-        rawString += to_string(materialCount);
-        rawString += to_string(lightCount);
-        rawString += to_string(cameraCount);
-        return rawString;
+        CharPointer pointer;
+        pointer.Add(transformCount);
+        pointer.Add(meshCount);
+        pointer.Add(materialCount);
+        pointer.Add(lightCount);
+        pointer.Add(cameraCount);
+
+        char* raw = pointer.Get();
+        int size = pointer.Size();
+        return raw;
     }
 };
 

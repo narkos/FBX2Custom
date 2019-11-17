@@ -32,16 +32,21 @@ namespace CustomWriter
         file.open(fileName, ios::out | ios::binary);
 
         char* extractedData;
+
+        //int num = 5;
+        //file.write(reinterpret_cast<const char *>(&num), sizeof(num));
+        //extractedData = new char[1] { (char)num };
+
         extractedData = ConvertHeaderToRaw(reader);
-        file.write(extractedData, strlen(extractedData));
+        file.write(reinterpret_cast<const char *>(extractedData), strlen(extractedData));
         extractedData = ConvertMeshesToRaw(reader);
-        file.write(extractedData, strlen(extractedData));
+        file.write(reinterpret_cast<const char *>(extractedData), sizeof(&extractedData));
         extractedData = ConvertLightsToRaw(reader);
-        file.write(extractedData, strlen(extractedData));
+        file.write(reinterpret_cast<const char *>(extractedData), sizeof(&extractedData));
         extractedData = ConvertMaterialsToRaw(reader);
-        file.write(extractedData, strlen(extractedData));
+        file.write(reinterpret_cast<const char *>(extractedData), sizeof(&extractedData));
         extractedData = ConvertCamerasToRaw(reader);
-        file.write(extractedData, strlen(extractedData));
+        file.write(reinterpret_cast<const char *>(extractedData), sizeof(&extractedData));
 
         file.close();
 
@@ -67,12 +72,12 @@ namespace CustomWriter
 
     char* ConvertHeaderToRaw(Reader* reader)
     {
-        string rawString = "";
-        rawString += reader->GetHeader()->ToRaw();
+        //string rawString = "";
+        //rawString += reader->GetHeader()->ToRaw();
 
-        char *raw = new char[strlen(rawString.c_str())];
-        strcpy(raw, rawString.c_str());
-        return raw;
+        //char *raw = new char[strlen(rawString.c_str())];
+        //strcpy(raw, rawString.c_str());
+        return reader->GetHeader()->ToRaw();
     }
 
     char* ConvertMeshesToRaw(Reader* reader)
