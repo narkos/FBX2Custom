@@ -10,7 +10,10 @@ class CharPointer {
 private:
     int addCount = 0;
     //char* currPointer = NULL;
+    
     vector<char*> pointers;
+    vector<size_t> pointerSizes;
+
     size_t currSize;
 public:
     CharPointer()
@@ -34,32 +37,49 @@ public:
             currSize = size + currSize;
         }
 
-        //currPointer = new char[size];
-        
-        //strcpy(currPointer, newData, size);
-
         char* tmpPointer = new char[size];
         memcpy(tmpPointer, newData, size);
 
         pointers.push_back(tmpPointer);
+        pointerSizes.push_back(size);
 
-        //if (this->addCount == 0)
-        //{
+        this->addCount++;
+    }
 
-        //}
-        //else 
-        //{
-        //    size_t prevSize = currSize;
-        //    char* prevData = currPointer;
-        //    currSize = currSize + size;
-        //    currPointer = new char[currSize];
+    void Add(string data)
+    {
+        size_t size = sizeof(char) * data.length();
+        char* newData = new char[size];
 
-        //    strncpy(currPointer, prevData, prevSize);
-        //    strncpy(currPointer + prevSize, newData, size);
-        //    //strcat(currPointer, newData);
+        if (this->addCount == 0)
+        {
+            currSize = size;
+        }
+        else
+        {
+            currSize = size + currSize;
+        }
 
-        //    // TODO: Release prev data.
-        //}
+        memcpy(newData, data.c_str(), size);
+        pointers.push_back(newData);
+        pointerSizes.push_back(size);
+
+        this->addCount++;
+    }
+
+    void Add(char* dataPointer, size_t dataSize)
+    {
+        if (this->addCount == 0)
+        {
+            currSize = dataSize;
+        }
+        else
+        {
+            currSize = dataSize + currSize;
+        }
+
+        pointers.push_back(dataPointer);
+        pointerSizes.push_back(dataSize);
 
         this->addCount++;
     }
@@ -71,11 +91,13 @@ public:
         if (pointers.size() != 0)
         {        
             // TODO FIX MEMCPY N SHIET
-            memcpy(allPointers, pointers[0], 5);
+            memcpy(allPointers, pointers[0], pointerSizes[0]);
 
+            size_t accumOffset = pointerSizes[0];
             for (int i = 1; i < pointers.size(); i++)
             {
-                memcpy(allPointers, pointers[i], 5);
+                memcpy(allPointers + accumOffset, pointers[i], pointerSizes[i]);
+                accumOffset += pointerSizes[i];
             }
 
             return allPointers;
@@ -86,7 +108,7 @@ public:
         }
     }
 
-    int Size()
+    size_t Size()
     {
         return currSize;
     }
@@ -124,36 +146,39 @@ struct Vertex
 	FbxDouble3 vBiTangent;
 
 public:
-    string ToRaw()
+
+    char* ToRaw()
     {
-        string rawString = "";
+        CharPointer pointer;
 
         for (int i = 0; i < 3; i++)
         {
-            rawString += to_string(vPos[i]);
+            pointer.Add(vPos[i]);
         }
 
         for (int i = 0; i < 2; i++)
         {
-            rawString += to_string(vUV[i]);
+            pointer.Add(vUV[i]);
         }
 
         for (int i = 0; i < 3; i++)
         {
-            rawString += to_string(vNormal[i]).c_str();
+            pointer.Add(vNormal[i]);
         }
 
         for (int i = 0; i < 3; i++)
         {
-            rawString += to_string(vTangent[i]).c_str();
+            pointer.Add(vTangent[i]);
         }
 
         for (int i = 0; i < 3; i++)
         {
-            rawString += to_string(vBiTangent[i]).c_str();
+            pointer.Add(vBiTangent[i]);
         }
 
-        return rawString;
+        char* raw = pointer.Get();
+        int size = pointer.Size();
+        return raw;
     }
 };
 
@@ -165,27 +190,35 @@ struct Transform
 	FbxDouble3 rotation;
 
 public:
-    string ToRaw()
+    size_t GetSize()
     {
-        string rawString = "";
-        rawString += name;
+        return (name.length() * sizeof(char)) + (sizeof(FbxDouble3) * 3);
+    }
+
+    char* ToRaw()
+    {
+        CharPointer pointer;
+
+        pointer.Add(name);
 
         for (int i = 0; i < 3; i++)
         {
-            rawString += to_string(position[i]);
+            pointer.Add(position[i]);
         }
 
         for (int i = 0; i < 3; i++)
         {
-            rawString += to_string(scale[i]);
+            pointer.Add(scale[i]);
         }
 
         for (int i = 0; i < 3; i++)
         {
-            rawString += to_string(rotation[i]);
+            pointer.Add(rotation[i]);
         }
 
-        return rawString;
+        char* raw = pointer.Get();
+        int size = pointer.Size();
+        return raw;
     }
 };
 
@@ -202,35 +235,53 @@ struct MeshHeader
 	int triangleCount;
 
 public:
-    string ToRaw()
+    size_t GetSize()
     {
-        string rawString = "";
-        rawString += transformName;
-        rawString += to_string(vertexCount);
-        return rawString;
+        return transformName.length() * sizeof(char) + sizeof(int);
+    }
+
+    char* ToRaw()
+    {
+        CharPointer pointer;
+
+        pointer.Add(transformName);
+        pointer.Add(vertexCount);
+
+        char* raw = pointer.Get();
+        int size = pointer.Size();
+        return raw;
     }
 };
 
 struct Mesh
 {
 	MeshHeader meshHeader;
+    vector<Vertex> meshVertices; //Original
+
 	//Vertex* meshVertexList;
 	vector<array<float, 4>> controlPoints;
-	vector<Vertex> meshVertices; //Original
 	vector<int> meshIndices;
 
 public:
-    string ToRaw()
+    size_t GetSize()
     {
-        string rawString = "";
-        rawString += meshHeader.ToRaw();
+        return meshHeader.GetSize() + (meshHeader.vertexCount * sizeof(Vertex));
+    }
+
+    char* ToRaw()
+    {
+        CharPointer pointer;
+
+        pointer.Add(meshHeader.ToRaw(), meshHeader.GetSize());
 
         for (int i = 0; i < meshHeader.vertexCount; i++)
         {
-            rawString += meshVertices[i].ToRaw();
+            pointer.Add(meshVertices[i].ToRaw(), sizeof(Vertex));
         }
 
-        return rawString;
+        char* raw = pointer.Get();
+        int size = pointer.Size();
+        return raw;
     }
 };
 
@@ -247,24 +298,23 @@ struct Camera
 	//double rot[4]; //Quaternion rotation of the camera (x, y, z, w)
 
 public:
-    string ToRaw()
+    size_t GetSize()
     {
-        string rawString = "";
-        rawString += transformName;
+        return (transformName.length() * sizeof(char)) + (sizeof(FbxDouble3) * 2) + sizeof(bool);
+    }
 
-        for (int i = 0; i < 3; i++)
-        {
-            rawString += viewDirection[i];
-        }
+    char* ToRaw()
+    {
+        CharPointer pointer;
 
-        for (int i = 0; i < 3; i++)
-        {
-            rawString += upVector[i];
-        }
+        pointer.Add(transformName);
+        pointer.Add(viewDirection);
+        pointer.Add(upVector);
+        pointer.Add(isOrtho);
 
-        rawString += to_string(isOrtho);
-
-        return rawString;
+        char* raw = pointer.Get();
+        int size = pointer.Size();
+        return raw;
     }
 };
 
