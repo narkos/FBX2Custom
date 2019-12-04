@@ -5,21 +5,23 @@
 
 struct Transform
 {
+    DataConverter pointer;
+
 	string name;
 	FbxDouble3 position;
 	FbxDouble3 scale;
 	FbxDouble3 rotation;
 
 public:
-	size_t GetSize()
+	size_t GetCurrSize()
 	{
-		return (name.length() * sizeof(char)) + (sizeof(FbxDouble3) * 3);
+        ToRaw(); // Just so that the size exists.
+		return pointer.Size();
 	}
 
 	char* ToRaw()
 	{
-		DataConverter pointer;
-
+        pointer.Clear();
 		pointer.Add(name);
 
 		for (int i = 0; i < 3; i++)

@@ -5,23 +5,28 @@
 
 struct Light
 {
+    DataConverter pointer;
+
 	string transformName;
 	FbxDouble3 color;
 	FbxDouble intensity;
 
 public:
-	string ToRaw()
-	{
-		string rawString = "";
-		rawString += transformName;
+    size_t GetCurrSize()
+    {
+        ToRaw(); // Just so that the size exists.
+        return pointer.Size();
+    }
 
-		for (int i = 0; i < 3; i++)
-		{
-			rawString += to_string(color[i]);
-		}
+    char* ToRaw()
+    {
+        pointer.Clear();
+        pointer.Add(transformName);
+        pointer.Add(color);
+        pointer.Add(intensity);
 
-		rawString += to_string(intensity).c_str();
-
-		return rawString;
-	}
+        char* raw = pointer.Get();
+        int size = pointer.Size();
+        return raw;
+    }
 };

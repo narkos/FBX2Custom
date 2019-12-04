@@ -5,15 +5,23 @@
 
 struct FbxFileHeader
 {
+    DataConverter pointer;
+
 	int transformCount = 0;
 	int meshCount = 0;	//Not rly needed just check vector.size
 	int materialCount = 0;
 	int lightCount = 0;
 	int cameraCount = 0;
 
+    size_t GetCurrSize()
+    {
+        ToRaw(); // Just so that the size exists.
+        return pointer.Size();
+    }
+
 	char* ToRaw()
 	{
-		DataConverter pointer;
+        pointer.Clear();
 		pointer.Add(transformCount);
 		pointer.Add(meshCount);
 		pointer.Add(materialCount);

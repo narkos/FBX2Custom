@@ -1,5 +1,6 @@
 #include <string.h>
 #include "CustomExporter.h"
+#include "DataConverter.h"
 
 using namespace std;
 
@@ -10,22 +11,39 @@ namespace CustomWriter
         ofstream file;
         file.open(fileName, ios::out | ios::binary);
 
-        char* extractedData;
+        char* data;
+        size_t dataSize;
 
         //int num = 5;
         //file.write(reinterpret_cast<const char *>(&num), sizeof(num));
-        //extractedData = new char[1] { (char)num };
+        //data = new char[1] { (char)num };
 
-        extractedData = ConvertHeaderToRaw(reader);
-        file.write(reinterpret_cast<const char *>(extractedData), strlen(extractedData));
-        extractedData = ConvertMeshesToRaw(reader);
-        file.write(reinterpret_cast<const char *>(extractedData), sizeof(&extractedData));
-        extractedData = ConvertLightsToRaw(reader);
-        file.write(reinterpret_cast<const char *>(extractedData), sizeof(&extractedData));
-        extractedData = ConvertMaterialsToRaw(reader);
-        file.write(reinterpret_cast<const char *>(extractedData), sizeof(&extractedData));
-        extractedData = ConvertCamerasToRaw(reader);
-        file.write(reinterpret_cast<const char *>(extractedData), sizeof(&extractedData));
+        ConvertHeaderToRaw(reader, data, dataSize);
+        if (data != NULL)
+        {
+            file.write(reinterpret_cast<const char *>(data), dataSize);
+        }
+
+        ConvertMeshesToRaw(reader, data, dataSize);
+        if (data != NULL)
+        {
+            file.write(reinterpret_cast<const char *>(data), dataSize);
+        }
+
+        ConvertLightsToRaw(reader, data, dataSize);
+        if (data != NULL)
+        {
+            file.write(reinterpret_cast<const char *>(data), dataSize);
+        }
+
+        //ConvertMaterialsToRaw(reader, data, dataSize);
+        //file.write(reinterpret_cast<const char *>(data), sizeof(&data));
+
+        ConvertCamerasToRaw(reader, data, dataSize);
+        if (data != NULL)
+        {
+            file.write(reinterpret_cast<const char *>(data), dataSize);
+        }
 
         file.close();
 
@@ -49,65 +67,75 @@ namespace CustomWriter
         return;
     }
 
-    char* ConvertHeaderToRaw(Reader* reader)
+    void ConvertHeaderToRaw(Reader* reader, char* &data, size_t &size)
     {
-        //string rawString = "";
-        //rawString += reader->GetHeader()->ToRaw();
-
-        //char *raw = new char[strlen(rawString.c_str())];
-        //strcpy(raw, rawString.c_str());
-        return reader->GetHeader()->ToRaw();
+        data = reader->GetHeader()->ToRaw();
+        size = reader->GetHeader()->GetCurrSize();
     }
 
-    char* ConvertMeshesToRaw(Reader* reader)
+    void ConvertMeshesToRaw(Reader* reader, char* &data, size_t &size)
     {
-        string rawString = "";
+        if (reader->GetHeader()->meshCount == 0)
+        {
+            data = NULL;
+            size = 0;
+            return;
+        }
+
+        DataConverter pointer;
         
         for (int i = 0; i < reader->GetHeader()->meshCount; i++)
         {
-            rawString += string(reader->GetMeshes()[i].ToRaw());
+            pointer.Add(reader->GetMeshes()[i].ToRaw(), reader->GetMeshes()[i].GetCurrSize());
         }
 
-        char *raw = new char[strlen(rawString.c_str())];
-        strcpy(raw, rawString.c_str());
-        return raw;
+        data = pointer.Get();
+        size = pointer.Size();
     }
 
-    char* ConvertLightsToRaw(Reader* reader)
+    void ConvertLightsToRaw(Reader* reader, char* &data, size_t &size)
     {
-        string rawString = "";
+        if (reader->GetHeader()->lightCount == 0)
+        {
+            data = NULL;
+            size = 0;
+            return;
+        }
+
+        DataConverter pointer;
 
         for (int i = 0; i < reader->GetHeader()->lightCount; i++)
         {
-            rawString += string(reader->GetLights()[i].ToRaw());
+            pointer.Add(reader->GetLights()[i].ToRaw(), reader->GetLights()[i].GetCurrSize());
         }
 
-        char *raw = new char[strlen(rawString.c_str())];
-        strcpy(raw, rawString.c_str());
-        return raw;
+        data = pointer.Get();
+        size = pointer.Size();
     }
 
-    char* ConvertMaterialsToRaw(Reader* reader) 
+    void ConvertMaterialsToRaw(Reader* reader, char* &data, size_t &size)
     {
-        string rawString = "";
-
-        char *raw = new char[strlen(rawString.c_str())];
-        strcpy(raw, rawString.c_str());
-        return raw;
+        return;
     }
 
-    char* ConvertCamerasToRaw(Reader* reader)
+    void ConvertCamerasToRaw(Reader* reader, char* &data, size_t &size)
     {
-        string rawString = "";
+        if (reader->GetHeader()->cameraCount == 0)
+        {
+            data = NULL;
+            size = 0;
+            return;
+        }
+
+        DataConverter pointer;
 
         for (int i = 0; i < reader->GetHeader()->cameraCount; i++)
         {
-            rawString += string(reader->GetCameras()[i].ToRaw());
+            pointer.Add(reader->GetCameras()[i].ToRaw(), reader->GetCameras()[i].GetCurrSize());
         }
 
-        char *raw = new char[strlen(rawString.c_str())];
-        strcpy(raw, rawString.c_str());
-        return raw;
+        data = pointer.Get();
+        size = pointer.Size();
     }
 }
 

@@ -5,6 +5,8 @@
 
 struct Vertex
 {
+    DataConverter pointer;
+
 	FbxDouble3 vPos;
 	FbxDouble2 vUV;
 	FbxDouble3 vNormal;
@@ -12,11 +14,15 @@ struct Vertex
 	FbxDouble3 vBiTangent;
 
 public:
+    size_t GetCurrSize()
+    {
+        ToRaw(); // Just so that the size exists.
+        return pointer.Size();
+    }
 
 	char* ToRaw()
 	{
-		DataConverter pointer;
-
+        pointer.Clear();
 		for (int i = 0; i < 3; i++)
 		{
 			pointer.Add(vPos[i]);

@@ -6,6 +6,8 @@
 
 struct Camera
 {
+    DataConverter pointer;
+
 	string transformName;
 	FbxDouble3 viewDirection;	//AKA LookAt
 	FbxDouble3 upVector;
@@ -17,15 +19,15 @@ struct Camera
 	//double rot[4]; //Quaternion rotation of the camera (x, y, z, w)
 
 public:
-	size_t GetSize()
+	size_t GetCurrSize()
 	{
-		return (transformName.length() * sizeof(char)) + (sizeof(FbxDouble3) * 2) + sizeof(bool);
+        ToRaw(); // Just so that the size exists.
+		return pointer.Size();
 	}
 
 	char* ToRaw()
 	{
-		DataConverter pointer;
-
+        pointer.Clear();
 		pointer.Add(transformName);
 		pointer.Add(viewDirection);
 		pointer.Add(upVector);

@@ -6,6 +6,8 @@
 
 struct MeshHeader
 {
+    DataConverter pointer;
+
 	string transformName;
 	int vertexCount;
 
@@ -17,15 +19,15 @@ struct MeshHeader
 	int triangleCount;
 
 public:
-	size_t GetSize()
+	size_t GetCurrSize()
 	{
-		return transformName.length() * sizeof(char) + sizeof(int);
+        ToRaw(); // Just so that the size exists.
+		return pointer.Size();
 	}
 
 	char* ToRaw()
 	{
-		DataConverter pointer;
-
+        pointer.Clear();
 		pointer.Add(transformName);
 		pointer.Add(vertexCount);
 
@@ -37,6 +39,8 @@ public:
 
 struct Mesh
 {
+    DataConverter pointer;
+
 	MeshHeader meshHeader;
 	vector<Vertex> meshVertices; //Original
 
@@ -45,20 +49,20 @@ struct Mesh
 	vector<int> meshIndices;
 
 public:
-	size_t GetSize()
+	size_t GetCurrSize()
 	{
-		return meshHeader.GetSize() + (meshHeader.vertexCount * sizeof(Vertex));
+        ToRaw(); // Just so that the size exists.
+		return pointer.Size();
 	}
 
 	char* ToRaw()
 	{
-		DataConverter pointer;
-
-		pointer.Add(meshHeader.ToRaw(), meshHeader.GetSize());
+        pointer.Clear();
+		pointer.Add(meshHeader.ToRaw(), meshHeader.GetCurrSize());
 
 		for (int i = 0; i < meshHeader.vertexCount; i++)
 		{
-			pointer.Add(meshVertices[i].ToRaw(), sizeof(Vertex));
+			pointer.Add(meshVertices[i].ToRaw(), meshVertices[i].GetCurrSize());
 		}
 
 		char* raw = pointer.Get();

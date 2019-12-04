@@ -11,11 +11,11 @@
 namespace CustomWriter
 {
     void WriteFile(string fileName, Reader* reader);
-    char* ConvertHeaderToRaw(Reader* reader);
-    char* ConvertMeshesToRaw(Reader* reader);
-    char* ConvertLightsToRaw(Reader* reader);
-    char* ConvertMaterialsToRaw(Reader* reader);
-    char* ConvertCamerasToRaw(Reader* reader);
+    void ConvertHeaderToRaw(Reader* reader, char* &data, size_t &size);
+    void ConvertMeshesToRaw(Reader* reader, char* &data, size_t &size);
+    void ConvertLightsToRaw(Reader* reader, char* &data, size_t &size);
+    void ConvertMaterialsToRaw(Reader* reader, char* &data, size_t &size);
+    void ConvertCamerasToRaw(Reader* reader, char* &data, size_t &size);
 }
 
 //namespace BinaryWriter {

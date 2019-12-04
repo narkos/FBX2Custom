@@ -15,13 +15,25 @@ private:
 	vector<char*> pointers;
 	vector<size_t> pointerSizes;
 
-	size_t currSize;
+	size_t currSize = 0;
 public:
 	DataConverter()
 	{
 		addCount = 0;
-		//currPointer = NULL;
 	}
+
+    void Clear()
+    {
+        addCount = 0;
+
+        for (int i = 0; i < pointers.size(); i++)
+        {
+            free (pointers[i]);
+        }
+
+        pointers.clear();
+        pointerSizes.clear();
+    }
 
 	template <class T>
 	void Add(T data)
@@ -91,7 +103,6 @@ public:
 
 		if (pointers.size() != 0)
 		{
-			// TODO FIX MEMCPY N SHIET
 			memcpy(allPointers, pointers[0], pointerSizes[0]);
 
 			size_t accumOffset = pointerSizes[0];
