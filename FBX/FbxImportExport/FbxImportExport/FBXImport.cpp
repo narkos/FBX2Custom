@@ -71,7 +71,7 @@ bool Reader::ImportFBX()
 	//const char* fbxFilename = "testFileFBX_Animation_Layer_bake.fbx";
 	//const char* fbxFilename = "BlendshapeTest.fbx";
 	//const char* fbxFilename = "Animation_Only_Preserve_bake.fbx";
-	const char* fbxFilename = "sexyCube.fbx";
+	const char* fbxFilename = "FbxFiles/sexyCube.fbx";
 
 	//Initialize the damn importher. 
 	bool lImportStatus = fbxImporter->Initialize(fbxFilename, -1, lSdkManager->GetIOSettings());
@@ -238,6 +238,7 @@ void Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene, Mesh& omesh, Tra
 
 	//RESERVED FOR ANIMATION TESTING RESERVED FOR ANIMATION TESTINGRESERVED FOR ANIMATION TESTING RESERVED FOR ANIMATION TESTING
 	FbxAnimStack* animStack = scene->GetCurrentAnimationStack();
+	FbxString test = scene->ActiveAnimStackName;
 	int numStacks = scene->GetSrcObjectCount<FbxAnimStack>();
 
 	cout << "NumStacks: " << numStacks << " NUMSTACKS\n";
