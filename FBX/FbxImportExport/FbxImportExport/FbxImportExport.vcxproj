@@ -76,6 +76,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CustomExporter.cpp" />
+    <ClCompile Include="DataConverter.cpp" />
     <ClCompile Include="FBXImport.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -83,8 +84,15 @@
     <ClInclude Include="Assets.h" />
     <ClInclude Include="CustomExporter.h" />
     <ClInclude Include="CustomFormat.h" />
+    <ClInclude Include="DataConverter.h" />
+    <ClInclude Include="FbxFileHeader.h" />
     <ClInclude Include="FBXImport.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Light.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Transform.h" />
     <ClInclude Include="Utility.h" />
+    <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

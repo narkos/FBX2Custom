@@ -2,35 +2,39 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="CustomExporter.cpp">
-      <Filter>OurFiles\CPPFiles</Filter>
-    </ClCompile>
     <ClCompile Include="FBXImport.cpp" />
+    <ClCompile Include="CustomExporter.cpp" />
+    <ClCompile Include="DataConverter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="OurFiles">
-      <UniqueIdentifier>{4376b2a8-fcc3-4c98-be3d-ad7f8e69ffa6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="OurFiles\HFiles">
-      <UniqueIdentifier>{6e9cfea3-c0dc-445d-8d53-ad02d5ad9469}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="OurFiles\CPPFiles">
-      <UniqueIdentifier>{d16f8808-d997-41ec-939d-97a8e947076b}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Utility.h">
-      <Filter>OurFiles\HFiles</Filter>
-    </ClInclude>
-    <ClInclude Include="CustomFormat.h">
-      <Filter>OurFiles\HFiles</Filter>
-    </ClInclude>
-    <ClInclude Include="CustomExporter.h">
-      <Filter>OurFiles\HFiles</Filter>
-    </ClInclude>
     <ClInclude Include="FBXImport.h" />
-    <ClInclude Include="Assets.h">
-      <Filter>OurFiles\HFiles</Filter>
+    <ClInclude Include="Utility.h" />
+    <ClInclude Include="CustomExporter.h" />
+    <ClInclude Include="CustomFormat.h" />
+    <ClInclude Include="DataConverter.h" />
+    <ClInclude Include="Vertex.h">
+      <Filter>SceneEntities</Filter>
     </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>SceneEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>SceneEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>SceneEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>SceneEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="FbxFileHeader.h">
+      <Filter>SceneEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="SceneEntities">
+      <UniqueIdentifier>{a7a15931-c0a0-4616-baea-50f55a0629c7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
