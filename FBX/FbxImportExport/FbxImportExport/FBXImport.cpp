@@ -55,11 +55,11 @@ bool Reader::ImportFBX()
 	//const char* fbxFilename = "Animation_Only_Baked.fbx";
 	//const char* fbxFilename = "testFileFBX_Animation_Layer_bake.fbx";
 	//const char* fbxFilename = "BlendshapeTest.fbx";
-	const char* fbxFilename = "Animation_Only_Preserve_bake.fbx";
+	//const char* fbxFilename = "Animation_Only_Preserve_bake.fbx";
 	//const char* fbxFilename = "sexyCube.fbx";
 	//const char* fbxFilename = "VERYCOOLSHAPE.fbx";
 	//const char* fbxFilename = "diamond.fbx";
-	//const char* fbxFilename = "blendamore.fbx";
+	const char* fbxFilename = "blendamore.fbx";
 
 	//Initialize the damn importher. 
 	bool lImportStatus = fbxImporter->Initialize(fbxFilename, -1, lSdkManager->GetIOSettings());
@@ -511,7 +511,8 @@ void Reader::ReadAnimationLayers(FbxScene* scene)
 	////https://forums.autodesk.com/t5/fbx-forum/how-do-i-get-animation-frames-and-keys-from-a-mesh/td-p/4189688
 	////http://help.autodesk.com/view/FBX/2019/ENU/?guid=FBX_Developer_Help_animation_html
 
-	FbxNode* currentNode = scene->GetRootNode();
+	FbxNode* rootNode = scene->GetRootNode();
+	//FbxNode* currentNode = scene->GetRootNode(); //FUTURE
 	int numStacks = scene->GetSrcObjectCount<FbxAnimStack>();
 	//FbxAnimStack* animStack = scene->GetCurrentAnimationStack();
 	cout << "Number of animation Stacks: " << numStacks << "\n";
@@ -529,11 +530,14 @@ void Reader::ReadAnimationLayers(FbxScene* scene)
 			FbxAnimLayer* animationLayer = animationStack->GetMember<FbxAnimLayer>(n);
 			int modelCount;
 
-
-			//ReadAnimationCurves(animationLayer, currentNode);
-			for (modelCount = 0; modelCount < currentNode->GetChildCount(); modelCount++)
+			if (animationLayer)
 			{
-				ReadAnimationCurves(animationLayer, currentNode->GetChild(modelCount));
+				cout << "-----Model Count IS: " << rootNode->GetChildCount() << "\n";
+				//ReadAnimationCurves(animationLayer, currentNode);
+				for (modelCount = 0; modelCount < rootNode->GetChildCount(); modelCount++)
+				{
+					ReadAnimationCurves(animationLayer, rootNode->GetChild(modelCount)); //GetChild(childIndex)
+				}
 			}
 		}
 	}
@@ -541,27 +545,47 @@ void Reader::ReadAnimationLayers(FbxScene* scene)
 
 void Reader::ReadAnimationCurves(FbxAnimLayer* currentLayer, FbxNode* currentNode)
 {
-	cout << "\nNode Name: " << currentNode->GetName() << "\n";
+	cout << "\n:::Important:::Node Name: " << currentNode->GetName() << "\n";
 	FbxAnimCurve* lAnimCurve = NULL;
 	FbxProperty lProperty = currentNode->GetFirstProperty();
 
 	FbxAnimCurveNode* lAnimCurveNode = lProperty.GetCurveNode(currentLayer);
 
-	//if (lAnimCurveNode->IsAnimated())
+	//NEW//
+	FbxGeometry* lGeometryAttribute = (FbxGeometry*)currentNode->GetNodeAttribute();
+	FbxAnimCurve* lCurve = lGeometryAttribute->GetShapeChannel(0, 0, currentLayer, false);
+	
+	int attrCount = currentNode->GetNodeAttributeCount();
+	cout << "\nNew attribute counterrrrrrr: " << attrCount << "\n";
+
+	int shapeCount = lGeometryAttribute->GetShapeCount();
+	if (shapeCount > 0)
+		cout << "\n-----Ultra Importante!! Number of shapes added to node--\n Shape count: " << shapeCount << "\n\n";
+
+
+	if (lCurve)
+	{
+		//int keyCount = lCurve->KeyGetCount();
+		ExtractCurveData(lCurve);
+	}
+	//NEW//
+
+
+	//if (lAnimCurveNode->IsAnimated()) 
 	//{
 	//	cout << "CurveNode: " << lAnimCurveNode->GetName() << "\n";
 	//}
 
 
-	lAnimCurve = currentNode->LclTranslation.GetCurve(currentLayer, FBXSDK_CURVENODE_COMPONENT_X);
-	if (lAnimCurve)
-		ExtractCurveData(lAnimCurve);
-	lAnimCurve = currentNode->LclTranslation.GetCurve(currentLayer, FBXSDK_CURVENODE_COMPONENT_Y);
-	if (lAnimCurve)
-		ExtractCurveData(lAnimCurve);
-	lAnimCurve = currentNode->LclTranslation.GetCurve(currentLayer, FBXSDK_CURVENODE_COMPONENT_Z);
-	if (lAnimCurve)
-		ExtractCurveData(lAnimCurve);
+	//lAnimCurve = currentNode->LclTranslation.GetCurve(currentLayer, FBXSDK_CURVENODE_COMPONENT_X);
+	//if (lAnimCurve)
+	//	ExtractCurveData(lAnimCurve);
+	//lAnimCurve = currentNode->LclTranslation.GetCurve(currentLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+	//if (lAnimCurve)
+	//	ExtractCurveData(lAnimCurve);
+	//lAnimCurve = currentNode->LclTranslation.GetCurve(currentLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+	//if (lAnimCurve)
+	//	ExtractCurveData(lAnimCurve);
 
 	//lAnimCurve = currentNode->LclRotation.GetCurve(currentLayer, FBXSDK_CURVENODE_COMPONENT_X);
 	//if (lAnimCurve)
@@ -583,30 +607,30 @@ void Reader::ReadAnimationCurves(FbxAnimLayer* currentLayer, FbxNode* currentNod
 
 	//PrintListCurveKeys(lAnimCurve, NULL);
 
-	int animObjCount = currentLayer->GetDstObjectCount();
-	cout << "Animation layer name: " << currentLayer->GetName() << "\n";
-	cout << "Number of Destination objects for this layer: " << animObjCount << "\n\n";
+	//int animObjCount = currentLayer->GetDstObjectCount();
+	//cout << "Animation layer name: " << currentLayer->GetName() << "\n";
+	//cout << "Number of Destination objects for this layer: " << animObjCount << "\n\n";
 
-	for (int suck = 0; suck < animObjCount; suck++)
-	{
-		FbxObject* animObjectHopefully = currentLayer->GetDstObject(suck);
-		cout << "Destination object no: " << suck << "\n";
-		cout << "Type: " << animObjectHopefully->GetTypeName() << "\n";
-		cout << "Name: " << animObjectHopefully->GetName() << "\n";
-		//cout << "DstPropertyCount: " << animObjectHopefully->GetDstObjectCount() << "\n\n";
+	//for (int suck = 0; suck < animObjCount; suck++)
+	//{
+	//	FbxObject* animObjectHopefully = currentLayer->GetDstObject(suck);
+	//	cout << "Destination object no: " << suck << "\n";
+	//	///cout << "Type: " << animObjectHopefully->GetTypeName() << "\n";
+	//	///cout << "Name: " << animObjectHopefully->GetName() << "\n";
+	//	//cout << "DstPropertyCount: " << animObjectHopefully->GetDstObjectCount() << "\n\n";
 
-		for (int wah = 0; wah < animObjectHopefully->GetDstObjectCount(); wah++)
-		{
-			//cout << "dstType: " << animObjectHopefully->GetDstObject(wah)->GetTypeName() << "\n";
-			//cout << "dstName: " << animObjectHopefully->GetDstObject(wah)->GetName() << "\n";
-			FbxProperty lProperty = animObjectHopefully->GetFirstProperty();
-			FbxAnimEvaluator* animEvaluator = lProperty.GetAnimationEvaluator();
-			//cout << "Animation Evaluator Data: " << animEvaluator->GetDstObjectCount() << "\n"
-			//	<< animEvaluator->GetDstPropertyCount() << "\n"
-			//	<< animEvaluator->GetNameOnly() << "\n";
-		}
+	//	for (int wah = 0; wah < animObjectHopefully->GetDstObjectCount(); wah++)
+	//	{
+	//		//cout << "dstType: " << animObjectHopefully->GetDstObject(wah)->GetTypeName() << "\n";
+	//		//cout << "dstName: " << animObjectHopefully->GetDstObject(wah)->GetName() << "\n";
+	//		FbxProperty lProperty = animObjectHopefully->GetFirstProperty();
+	//		FbxAnimEvaluator* animEvaluator = lProperty.GetAnimationEvaluator();
+	//		//cout << "Animation Evaluator Data: " << animEvaluator->GetDstObjectCount() << "\n"
+	//		//	<< animEvaluator->GetDstPropertyCount() << "\n"
+	//		//	<< animEvaluator->GetNameOnly() << "\n";
+	//	}
 
-	}
+	//}
 	//cout << "ANIMOBJECTCOUNTPLEASE: " << animObjCount << " !\n"; 
 }
 
