@@ -18,32 +18,39 @@ namespace CustomWriter
         //file.write(reinterpret_cast<const char *>(&num), sizeof(num));
         //data = new char[1] { (char)num };
 
+        DataConverter pointer;
+        pointer.Clear();
+
         ConvertHeaderToRaw(reader, data, dataSize);
         if (data != NULL)
         {
-            file.write(reinterpret_cast<const char *>(data), dataSize);
+            pointer.Add(data, dataSize);
         }
 
         ConvertMeshesToRaw(reader, data, dataSize);
         if (data != NULL)
         {
-            file.write(reinterpret_cast<const char *>(data), dataSize);
+            pointer.Add(data, dataSize);
         }
 
-        ConvertLightsToRaw(reader, data, dataSize);
-        if (data != NULL)
-        {
-            file.write(reinterpret_cast<const char *>(data), dataSize);
-        }
+        data = pointer.Get();
+        dataSize = pointer.Size();
+        file.write(reinterpret_cast<const char *>(data), dataSize);
 
-        //ConvertMaterialsToRaw(reader, data, dataSize);
-        //file.write(reinterpret_cast<const char *>(data), sizeof(&data));
+        //ConvertLightsToRaw(reader, data, dataSize);
+        //if (data != NULL)
+        //{
+        //    file.write(reinterpret_cast<const char *>(data), dataSize);
+        //}
 
-        ConvertCamerasToRaw(reader, data, dataSize);
-        if (data != NULL)
-        {
-            file.write(reinterpret_cast<const char *>(data), dataSize);
-        }
+        ////ConvertMaterialsToRaw(reader, data, dataSize);
+        ////file.write(reinterpret_cast<const char *>(data), sizeof(&data));
+
+        //ConvertCamerasToRaw(reader, data, dataSize);
+        //if (data != NULL)
+        //{
+        //    file.write(reinterpret_cast<const char *>(data), dataSize);
+        //}
 
         file.close();
 

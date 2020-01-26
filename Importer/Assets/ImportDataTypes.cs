@@ -31,7 +31,7 @@ public class ImportDataTypes : MonoBehaviour
             public Light[] lights;
         }
 
-        public void Read(BinaryReader br)
+        public void Read(ref BinaryReader br)
         {
             header.transformCount = br.ReadInt32();
             header.meshCount = br.ReadInt32();
@@ -44,7 +44,7 @@ public class ImportDataTypes : MonoBehaviour
             for (int i = 0; i < header.meshCount; i++)
             {
                 Mesh newObject = new Mesh();
-                newObject.Read(br);
+                newObject.Read(ref br);
                 body.meshes[i] = newObject;
             }
 
@@ -53,7 +53,7 @@ public class ImportDataTypes : MonoBehaviour
             for (int i = 0; i < header.lightCount; i++)
             {
                 Light newObject = new Light();
-                newObject.Read(br);
+                newObject.Read(ref br);
                 body.lights[i] = newObject;
             }
         }
@@ -64,9 +64,9 @@ public class ImportDataTypes : MonoBehaviour
         public Header header;
         public Body body;
 
-        public void Read(BinaryReader br)
+        public void Read(ref BinaryReader br)
         {
-            header.transformName.Read(br);
+            header.transformName.Read(ref br);
             header.nrVertices = br.ReadInt32();
 
             body.vertices = new Vertex[header.nrVertices];
@@ -74,7 +74,7 @@ public class ImportDataTypes : MonoBehaviour
             for (int i = 0; i < header.nrVertices; i++)
             {
                 Vertex vertex = new Vertex();
-                vertex.Read(br);
+                vertex.Read(ref br);
 
                 body.vertices[i] = vertex;
             }
@@ -100,9 +100,9 @@ public class ImportDataTypes : MonoBehaviour
         public double range;
         public double intensity;
 
-        public void Read(BinaryReader br)
+        public void Read(ref BinaryReader br)
         {
-            transform.Read(br);
+            transform.Read(ref br);
             range = br.ReadDouble();
             intensity = br.ReadDouble();
         }
@@ -115,12 +115,12 @@ public class ImportDataTypes : MonoBehaviour
         public Vec3 rotation;
         public Vec3 scale;
 
-        public void Read(BinaryReader br)
+        public void Read(ref BinaryReader br)
         {
-            name.Read(br);
-            position.Read(br);
-            rotation.Read(br);
-            scale.Read(br);
+            name.Read(ref br);
+            position.Read(ref br);
+            rotation.Read(ref br);
+            scale.Read(ref br);
         }
     }
 
@@ -130,11 +130,25 @@ public class ImportDataTypes : MonoBehaviour
         public Vec3 normal;
         public Vec2 uv;
 
-        public void Read(BinaryReader br)
+        public void Read(ref BinaryReader br)
         {
-            position.Read(br);
-            normal.Read(br);
-            uv.Read(br);
+            position.Read(ref br);
+            normal.Read(ref br);
+            uv.Read(ref br);
+            ValidateValues();
+        }
+
+        private void ValidateValues()
+        {
+            if (new UnityEngine.Vector3((float)normal.x, (float)normal.y, (float)normal.z).magnitude > 1)
+            {
+                print("Invalid vertex position");
+            }
+
+            if (System.Math.Abs(uv.x) > 1f || System.Math.Abs(uv.y) > 1f)
+            {
+                print("Invalid vertex position");
+            }
         }
     }
 
@@ -145,7 +159,7 @@ public class ImportDataTypes : MonoBehaviour
         public double z;
         public double w;
 
-        public void Read(BinaryReader br)
+        public void Read(ref BinaryReader br)
         {
             x = br.ReadDouble();
             y = br.ReadDouble();
@@ -160,7 +174,7 @@ public class ImportDataTypes : MonoBehaviour
         public double y;
         public double z;
 
-        public void Read(BinaryReader br)
+        public void Read(ref BinaryReader br)
         {
             x = br.ReadDouble();
             y = br.ReadDouble();
@@ -173,7 +187,7 @@ public class ImportDataTypes : MonoBehaviour
         public double x;
         public double y;
 
-        public void Read(BinaryReader br)
+        public void Read(ref BinaryReader br)
         {
             x = br.ReadDouble();
             y = br.ReadDouble();
@@ -185,10 +199,10 @@ public class ImportDataTypes : MonoBehaviour
         public int textLength;
         public string text;
 
-        public void Read(BinaryReader br)
+        public void Read(ref BinaryReader br)
         {
             textLength = br.ReadInt32();
-            text = br.ReadChars(textLength).ToString();
+            text = new string(br.ReadChars(textLength));
         }
     }
 }

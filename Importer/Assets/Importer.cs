@@ -21,12 +21,34 @@ public class Importer : MonoBehaviour
 
         if (System.IO.File.Exists(finalPath))
         {
-            FileStream fs = new FileStream(finalPath, FileMode.Open);
+            FileStream fs = new FileStream(finalPath, FileMode.Open);            
 
-            ImportDataTypes.Scene scene = new ImportDataTypes.Scene();
-            scene.Read(new BinaryReader(fs));
+            try
+            {
+                if (fs.CanRead && fs.CanSeek)
+                {
+                    fs.Seek(0, SeekOrigin.Begin);
+                    BinaryReader br = new BinaryReader(fs);
+                    ImportDataTypes.Scene scene = new ImportDataTypes.Scene();
+                    scene.Read(ref br);
+                }
+                else
+                {
+                    print("Couldn't read file: " + finalPath);
+                }
+            }
+            catch(Exception e)
+            {
+                print("Couldn't read file: " + finalPath);
+                print(e.Message);
+                print(e.Source);
+            }
 
             fs.Close();
+        }
+        else
+        {
+            print("Couldn't find file: " + finalPath);
         }
     }
 

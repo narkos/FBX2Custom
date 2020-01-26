@@ -61,7 +61,8 @@ public:
 
 	void Add(string data)
 	{
-        Add(data.length());
+        int stringLength = (int)data.length();
+        Add(stringLength);
 
 		size_t size = sizeof(char) * data.length();
 		char* newData = new char[size];
