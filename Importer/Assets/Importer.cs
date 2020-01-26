@@ -13,9 +13,9 @@ public class Importer : MonoBehaviour
 {
     public string resourceFileName;
 
-    //public string resourceBinaryFileName;
+    public ImportDataTypes.Scene scene;
 
-    public void ReadBinary()
+    public void ReadScene()
     {
         string finalPath = System.IO.Path.Combine(Application.streamingAssetsPath, resourceFileName);
 
@@ -29,7 +29,7 @@ public class Importer : MonoBehaviour
                 {
                     fs.Seek(0, SeekOrigin.Begin);
                     BinaryReader br = new BinaryReader(fs);
-                    ImportDataTypes.Scene scene = new ImportDataTypes.Scene();
+                    scene = new ImportDataTypes.Scene();
                     scene.Read(ref br);
                 }
                 else
@@ -221,7 +221,7 @@ public class Importer : MonoBehaviour
 
             if (GUILayout.Button("ReadBinary"))
             {
-                myScript.ReadBinary();
+                myScript.ReadScene();
             }
         }
     }

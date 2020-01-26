@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Importer))]
 public class SceneCreator : MonoBehaviour
 {
     public Material defaultMaterial;
@@ -28,6 +29,51 @@ public class SceneCreator : MonoBehaviour
     }
 
     private void Start()
+    {
+        ImportDataTypes.Scene scene = this.GetComponent<Importer>().scene;
+
+        for (int i = 0; i < scene.header.transformCount; i++)
+        {
+            CreateTransform(scene.body.transforms[i]);
+        }
+
+        for (int i = 0; i < scene.header.meshCount; i++)
+        {
+            ImportDataTypes.Mesh mesh = scene.body.meshes[i];
+            Transform obTransform = GameObject.Find(mesh.header.transformName.text).transform;
+            CreateMesh(obTransform, mesh.body.vertices, null, defaultMaterial);
+        }
+    }
+
+    public UnityEngine.Transform CreateTransform(ImportDataTypes.Transform transform)
+    {
+        GameObject ob = new GameObject();
+        ob.name = transform.name.text;
+        ob.transform.position = transform.position.Create();
+        ob.transform.localEulerAngles = transform.rotation.Create();
+        ob.transform.localScale = transform.scale.Create();
+        return ob.transform;
+    }
+
+    public void CreateMesh(ImportDataTypes.Mesh mesh, ImportDataTypes.Transform transform)
+    {
+        GameObject meshOB = transform.gameObject;
+        Mesh mesh = new Mesh();
+
+        MeshFilter meshFilter = meshOB.AddComponent<MeshFilter>();
+        meshFilter.mesh = mesh;
+
+        MeshRenderer meshRenderer = meshOB.AddComponent<MeshRenderer>();
+
+        material = material != null ? material : defaultMaterial;
+        meshRenderer.material = material;
+
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.RecalculateNormals();
+    }
+
+    private void TestScene()
     {
         Datatypes.Transform tra = new Datatypes.Transform();
         tra.position = Vector3.zero;
@@ -82,23 +128,6 @@ public class SceneCreator : MonoBehaviour
         mesh.Create();
         //*************
 
-        CreateMesh(vertices, tri, defaultMaterial);
-    }
-
-    public void CreateMesh(List<Vector3> vertices, List<int> triangles, Material material, string name = "myMesh")
-    {
-        GameObject meshOB = new GameObject();
-        meshOB.name = name;
-        Mesh mesh = new Mesh();
-
-        MeshFilter meshFilter = meshOB.AddComponent<MeshFilter>();
-        meshFilter.mesh = mesh;
-
-        MeshRenderer meshRenderer = meshOB.AddComponent<MeshRenderer>();
-        meshRenderer.material = material;
-
-        mesh.vertices = vertices.ToArray();
-        mesh.triangles = triangles.ToArray();
-        mesh.RecalculateNormals();
+        //CreateMesh(vertices.ToArray(), tri.ToArray(), defaultMaterial);
     }
 }

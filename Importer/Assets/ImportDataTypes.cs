@@ -27,6 +27,7 @@ public class ImportDataTypes : MonoBehaviour
 
         public struct Body
         {
+            public Transform[] transforms;
             public Mesh[] meshes;
             public Light[] lights;
         }
@@ -57,6 +58,22 @@ public class ImportDataTypes : MonoBehaviour
                 body.lights[i] = newObject;
             }
         }
+
+        #region On scene existing
+        public Transform GetTransform(string transformName)
+        {
+            for (int i = 0; i < body.transforms.Length; i++)
+            {
+                if (body.transforms[i].name.text == transformName)
+                {
+                    return body.transforms[i];
+                }
+            }
+
+            print("Couldn't find transform by name: " + transformName);
+            return new Transform();
+        }
+        #endregion
     }
 
     public struct Mesh
@@ -140,14 +157,16 @@ public class ImportDataTypes : MonoBehaviour
 
         private void ValidateValues()
         {
-            if (new UnityEngine.Vector3((float)normal.x, (float)normal.y, (float)normal.z).magnitude > 1)
+            UnityEngine.Vector3 normalVector = new UnityEngine.Vector3((float)normal.x, (float)normal.y, (float)normal.z);
+
+            if (normalVector.magnitude > 1)
             {
-                print("Invalid vertex position");
+                print("Invalid vertex, weird normal: " + normalVector.ToString());
             }
 
             if (System.Math.Abs(uv.x) > 1f || System.Math.Abs(uv.y) > 1f)
             {
-                print("Invalid vertex position");
+                print("Invalid vertex, weird UV: (" + uv.x + "," + uv.y + ")");
             }
         }
     }
@@ -166,6 +185,11 @@ public class ImportDataTypes : MonoBehaviour
             z = br.ReadDouble();
             w = br.ReadDouble();
         }
+
+        public UnityEngine.Vector4 Create()
+        {
+            return new UnityEngine.Vector4((float)x, (float)y, (float)z, (float)w);
+        }
     }
 
     public struct Vec3
@@ -180,6 +204,11 @@ public class ImportDataTypes : MonoBehaviour
             y = br.ReadDouble();
             z = br.ReadDouble();
         }
+
+        public UnityEngine.Vector3 Create()
+        {
+            return new UnityEngine.Vector3((float)x, (float)y, (float)z);
+        }
     }
 
     public struct Vec2
@@ -191,6 +220,11 @@ public class ImportDataTypes : MonoBehaviour
         {
             x = br.ReadDouble();
             y = br.ReadDouble();
+        }
+
+        public UnityEngine.Vector2 Create()
+        {
+            return new UnityEngine.Vector2((float)x, (float)y);
         }
     }
 
