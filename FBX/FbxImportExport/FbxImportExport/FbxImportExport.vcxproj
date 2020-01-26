@@ -77,6 +77,8 @@
   <ItemGroup>
     <ClCompile Include="CustomExporter.cpp" />
     <ClCompile Include="DataConverter.cpp" />
+    <ClCompile Include="DisplayAnimation.cpp" />
+    <ClCompile Include="DisplayCommon.cpp" />
     <ClCompile Include="FBXImport.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -85,6 +87,8 @@
     <ClInclude Include="CustomExporter.h" />
     <ClInclude Include="CustomFormat.h" />
     <ClInclude Include="DataConverter.h" />
+    <ClInclude Include="DisplayAnimation.h" />
+    <ClInclude Include="DisplayCommon.h" />
     <ClInclude Include="FbxFileHeader.h" />
     <ClInclude Include="FBXImport.h" />
     <ClInclude Include="Camera.h" />

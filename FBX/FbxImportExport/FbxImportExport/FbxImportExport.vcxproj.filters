@@ -5,6 +5,12 @@
     <ClCompile Include="FBXImport.cpp" />
     <ClCompile Include="CustomExporter.cpp" />
     <ClCompile Include="DataConverter.cpp" />
+    <ClCompile Include="DisplayCommon.cpp">
+      <Filter>Temp</Filter>
+    </ClCompile>
+    <ClCompile Include="DisplayAnimation.cpp">
+      <Filter>Temp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FBXImport.h" />
@@ -31,10 +37,19 @@
       <Filter>SceneEntities</Filter>
     </ClInclude>
     <ClInclude Include="Assets.h" />
+    <ClInclude Include="DisplayCommon.h">
+      <Filter>Temp</Filter>
+    </ClInclude>
+    <ClInclude Include="DisplayAnimation.h">
+      <Filter>Temp</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SceneEntities">
       <UniqueIdentifier>{a7a15931-c0a0-4616-baea-50f55a0629c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Temp">
+      <UniqueIdentifier>{dc0911dc-8139-4738-9786-ba59098d980f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

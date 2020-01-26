@@ -1,4 +1,5 @@
 #include "FBXImport.h"
+#include "DisplayAnimation.h"
 #include <string.h>
 
 using namespace std;
@@ -71,7 +72,8 @@ bool Reader::ImportFBX()
 	//const char* fbxFilename = "testFileFBX_Animation_Layer_bake.fbx";
 	//const char* fbxFilename = "BlendshapeTest.fbx";
 	//const char* fbxFilename = "Animation_Only_Preserve_bake.fbx";
-	const char* fbxFilename = "FbxFiles/sexyCube.fbx";
+	const char* fbxFilename = "FbxFiles/blendshape_and_transform_3.fbx";
+	//const char* fbxFilename = "FbxFiles/blendshape_and_transform_all_actions_off.fbx";
 
 	//Initialize the damn importher. 
 	bool lImportStatus = fbxImporter->Initialize(fbxFilename, -1, lSdkManager->GetIOSettings());
@@ -136,6 +138,7 @@ bool Reader::ReadSceneData(FbxScene* scene)
 	//https://forums.autodesk.com/t5/fbx-forum/useful-things-you-might-want-to-know-about-fbxsdk/td-p/4821177
     if (lRootNode)
     {
+		int childCount = lRootNode->GetChildCount();
         for (int i = 0; i < lRootNode->GetChildCount(); i++)	//Traverse through every node in the scene.
         {
             //Fill our objects with data beep bop.  
@@ -145,7 +148,6 @@ bool Reader::ReadSceneData(FbxScene* scene)
 
             if (currentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eMesh)
             {
-                //meshes[i] = ProcessMesh(currentNode);
                 Mesh mesh;
                 Transform transform;
                 ProcessMesh(currentNode, scene, mesh, transform);
@@ -207,7 +209,7 @@ void Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene, Mesh& omesh, Tra
 	int uvCount = mesh->GetTextureUVCount();
 	int faceIndexCount = mesh->GetPolygonVertexCount();	//Vertex count * 3
 	
-	
+	//DisplayAnimation(scene);
 	FbxVector4* controlPoints = mesh->GetControlPoints();
 	tempMesh.controlPoints.reserve(controlPointCount);
 	for (unsigned int i = 0; i < controlPointCount; i++)
@@ -242,40 +244,65 @@ void Reader::ProcessMesh(FbxNode* currentNode, FbxScene* scene, Mesh& omesh, Tra
 	int numStacks = scene->GetSrcObjectCount<FbxAnimStack>();
 
 	cout << "NumStacks: " << numStacks << " NUMSTACKS\n";
+	FbxDeformationsEvaluator defEval;
+	bool isInit = defEval.Init(currentNode, mesh);
 
 
 	for (int a = 0; a < numStacks; a++)
 	{
 		FbxAnimStack* animationStack = scene->GetSrcObject<FbxAnimStack>(a);
 		int numAnimLayers = animationStack->GetMemberCount<FbxAnimLayer>();
-		//cout << "NumStackSLAYERS: " << numAnimLayers << " NUMSTACKLAYERSZS\n";
 
 		for (int n = 0; n < numAnimLayers; n++)
 		{
 			FbxAnimLayer* animationLayer = animationStack->GetMember<FbxAnimLayer>(n);
-			
-			int animObjCount = animationLayer->GetDstObjectCount();
+			FbxAnimCurve* animCurve = currentNode->LclTranslation.GetCurve(animationLayer, FBXSDK_CURVENODE_COMPONENT_X);
+			int curveKeycount = animCurve->KeyGetCount();
 
-			for (int suck = 0; suck < animObjCount; suck++)
+			FbxNodeAttribute* nodeAttribute = currentNode->GetNodeAttribute();
+			int memberCount = animationLayer->GetMemberCount();
+
+			int nodeCount = currentNode->GetNodeAttributeCount();
+			for (int i = 0; i < nodeCount; i++) {
+				FbxNodeAttribute* ok = currentNode->GetNodeAttributeByIndex(i);
+				FbxNodeAttribute::EType type = ok->GetAttributeType();
+				int loler = 0;
+			}
+			for (int o = 0; o < memberCount; o++) {
+				FbxAnimCurveNode* member = (FbxAnimCurveNode*)animationLayer->GetMember(o);
+				cout << member->GetName() << " " << member->GetClassId().GetName() << endl;
+				cout << endl << member->GetChannelsCount() << endl;
+			}
+			if (nodeAttribute->GetAttributeType() == FbxNodeAttribute::eMesh)
 			{
-
-				FbxObject* animObjectHopefully = animationLayer->GetDstObject(suck);
-				cout << "AnimationLayer source object no: " << suck << "\n";
-				cout << "Type: " << animObjectHopefully->GetTypeName() << "\n";
-				cout << "Name: " << animObjectHopefully->GetName() << "\n";
-				cout << "DstPropertyCount: " << animObjectHopefully->GetDstObjectCount() << "\n\n";
-
-				for (int wah = 0; wah < animObjectHopefully->GetDstObjectCount(); wah++)
-				{
-					cout << "dstType: " << animObjectHopefully->GetDstObject(wah)->GetTypeName() << "\n";
-					cout << "dstName: " << animObjectHopefully->GetDstObject(wah)->GetName() << "\n";
-				}
-
+				FbxGeometry* geom = currentNode->GetGeometry();
+		
+				int shapeCount = geom->GetShapeCount();
+				string nm = geom->GetName();
+				string nodename = currentNode->GetName();
+				int blendShapeDeformerCount = geom->GetDeformerCount(FbxDeformer::eBlendShape);
+					cout << "a mesh" << endl;
 			}
 
-			cout << "ANIMOBJECTCOUNTPLEASE: " << animObjCount << " !\n";
 
-			//FbxAnimCurve* animationCurve = 
+			for (int i = 0; i < curveKeycount; i++)
+			{
+				float keyValue = static_cast<float>(animCurve->KeyGetValue(i));
+				FbxTime keyTime = animCurve->KeyGetTime(i);
+				//FbxVector4* vertArray = new FbxVector4[mesh->GetControlPointsCount()];
+				FbxVector4 vertArray[8];
+				
+				// Denna funktionen är bajs, verkar lovande förutom att den exploderar i ansiktet på en.
+				 //defEval.ComputeShapeDeformation(vertArray, NULL);
+				
+				
+				//bool success = defEval.ComputeShapeDeformation(vertArray, keyTime);
+				//string test = "";
+			}
+
+			int animObjCount = animationLayer->GetDstObjectCount();
+
+			cout << "ANIMOBJECTCOUNTPLEASE: " << animObjCount << " !\n";
 		}
 
 	}
