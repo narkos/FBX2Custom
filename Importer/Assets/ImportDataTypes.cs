@@ -40,6 +40,14 @@ public class ImportDataTypes : MonoBehaviour
             header.lightCount = br.ReadInt32();
             header.cameraCount = br.ReadInt32();
 
+            body.transforms = new Transform[header.transformCount];
+            for (int i = 0; i < body.transforms.Length; i++)
+            {
+                Transform newObject = new Transform();
+                newObject.Read(ref br);
+                body.transforms[i] = newObject;
+            }
+
             // Read meshes.
             body.meshes = new Mesh[header.meshCount];
             for (int i = 0; i < header.meshCount; i++)

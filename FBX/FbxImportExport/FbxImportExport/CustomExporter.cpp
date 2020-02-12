@@ -21,12 +21,21 @@ namespace CustomWriter
         DataConverter pointer;
         pointer.Clear();
 
+        // Add file header.
         ConvertHeaderToRaw(reader, data, dataSize);
         if (data != NULL)
         {
             pointer.Add(data, dataSize);
         }
 
+        // Add transforms.
+        ConvertTransformsToRaw(reader, data, dataSize);
+        if (data != NULL)
+        {
+            pointer.Add(data, dataSize);
+        }
+
+        // Add meshes.
         ConvertMeshesToRaw(reader, data, dataSize);
         if (data != NULL)
         {
@@ -78,6 +87,26 @@ namespace CustomWriter
     {
         data = reader->GetHeader()->ToRaw();
         size = reader->GetHeader()->GetCurrSize();
+    }
+
+    void ConvertTransformsToRaw(Reader* reader, char* &data, size_t &size)
+    {
+        if (reader->GetHeader()->transformCount == 0)
+        {
+            data = NULL;
+            size = 0;
+            return;
+        }
+
+        DataConverter pointer;
+
+        for (int i = 0; i < reader->GetHeader()->transformCount; i++)
+        {
+            pointer.Add(reader->GetTransforms()[i].ToRaw(), reader->GetTransforms()[i].GetCurrSize());
+        }
+
+        data = pointer.Get();
+        size = pointer.Size();
     }
 
     void ConvertMeshesToRaw(Reader* reader, char* &data, size_t &size)
