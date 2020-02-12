@@ -30,6 +30,7 @@ public class SceneCreator : MonoBehaviour
 
     private void Start()
     {
+        this.GetComponent<Importer>().ReadScene();
         ImportDataTypes.Scene scene = this.GetComponent<Importer>().scene;
 
         for (int i = 0; i < scene.header.transformCount; i++)
@@ -40,8 +41,7 @@ public class SceneCreator : MonoBehaviour
         for (int i = 0; i < scene.header.meshCount; i++)
         {
             ImportDataTypes.Mesh mesh = scene.body.meshes[i];
-            Transform obTransform = GameObject.Find(mesh.header.transformName.text).transform;
-            CreateMesh(obTransform, mesh.body.vertices, null, defaultMaterial);
+            CreateMesh(mesh);
         }
     }
 
@@ -55,9 +55,9 @@ public class SceneCreator : MonoBehaviour
         return ob.transform;
     }
 
-    public void CreateMesh(ImportDataTypes.Mesh mesh, ImportDataTypes.Transform transform)
+    public void CreateMesh(ImportDataTypes.Mesh importMesh)
     {
-        GameObject meshOB = transform.gameObject;
+        GameObject meshOB = GameObject.Find(importMesh.header.transformName.text).gameObject;
         Mesh mesh = new Mesh();
 
         MeshFilter meshFilter = meshOB.AddComponent<MeshFilter>();
@@ -65,11 +65,26 @@ public class SceneCreator : MonoBehaviour
 
         MeshRenderer meshRenderer = meshOB.AddComponent<MeshRenderer>();
 
-        material = material != null ? material : defaultMaterial;
+        Material material = defaultMaterial;
         meshRenderer.material = material;
 
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
+        List<Vector3> verticesToUse = new List<Vector3>();
+        List<Vector2> uvsToUse = new List<Vector2>();
+
+        for (int i = 0; i < importMesh.body.vertices.Length; i++)
+        {
+            Vector3 pos = new Vector3((float)importMesh.body.vertices[i].position.x, (float)importMesh.body.vertices[i].position.y, (float)importMesh.body.vertices[i].position.z);
+            verticesToUse.Add(pos);
+        }
+               
+        for (int i = 0; i < importMesh.body.vertices.Length; i++)
+        {
+            Vector2 uv = new Vector2((float)importMesh.body.vertices[i].uv.x, (float)importMesh.body.vertices[i].uv.y);
+            verticesToUse.Add(uv);
+        }
+
+        mesh.vertices = verticesToUse.ToArray();
+        mesh.uv = uvsToUse.ToArray();
         mesh.RecalculateNormals();
     }
 
